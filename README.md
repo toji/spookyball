@@ -1,6 +1,28 @@
 # SpookyBall
 SpookyBall is a WebGPU-powered, Halloween-themed, open source breakout game!
 
+## Work in Progress
+SpookyBall is a work in progress that will likely gain a trickle of new features over time. Some
+things that I'm considering adding in the future:
+ - Audio
+ - Particle effects
+ - Better UI
+ - Graphical optimizations
+ - More powerups
+ - More interesting level progression
+ - Highscore board
+
+## Slow device?
+Try one of these graphics settings:
+ - [High](https://spookyball.com/) (Default)
+ - [Medium](https://spookyball.com/?quality=medium)
+ - [Low](https://spookyball.com/?quality=low)
+ - [Potato](https://spookyball.com/?quality=potato)
+
+## Want to peek behind the curtain?
+Try [Debug Mode](https://spookyball.com/?debug=1) to see some extra controls that let you toy with
+the game and rendering!
+
 ## Acknowledgements
 
 ### Standards and Tools
