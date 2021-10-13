@@ -1,0 +1,21 @@
+{
+    "name": "spookyball",
+    "version": "1.0.0",
+    "repository": "https://github.com/toji/spookyball",
+    "authors": [
+        "Brandon Jones <tojiro@gmail.com>"
+    ],
+    "description": "WebGPU-powered, Halloween-themed, open source breakout game",
+    "license": "MIT",
+    "dependencies": {
+        "dat.gui": "^0.7.7",
+        "gl-matrix": "^3.4.3",
+        "matter-js": "^0.17.1",
+        "stats.js": "^0.17.0",
+        "web-texture-tool": "github:toji/web-texture-tool"
+    },
+    "devDependencies": {
+        "esbuild": "^0.12.15",
+        "esbuild-plugin-import-map": "^2.1.0"
+    }
+}
