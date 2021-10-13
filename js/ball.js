@@ -43,14 +43,6 @@ export class BallSystem extends System {
       }
       this.ballScene = scene;
     });
-
-    // Old, boring ball
-    /*const ballGeometry = new SphereGeometry(gpu, 0.8);
-    const ballMaterial = new PBRMaterial();
-    ballMaterial.baseColorFactor.set([0.0, 0.0, 0.0, 1.0]);
-    ballMaterial.emissiveFactor.set([0.9, 0.9, 0.5]);
-    ballMaterial.castsShadow = false;
-    this.ballMesh = new Mesh({ geometry: ballGeometry, material: ballMaterial });*/
   }
 
   execute(delta, time, gpu) {

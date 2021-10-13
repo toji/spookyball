@@ -7,6 +7,12 @@ export class HTMLDisplaySystem extends System {
     this.levelTitle = document.getElementById('level-title');
     this.scoreDisplay = document.getElementById('score-display');
     this.livesDisplay = document.getElementById('lives-display');
+    this.replayButton = document.getElementById('replay-button');
+    
+    this.replayButton.addEventListener('click', () => {
+      // Reset the GameState
+      this.singleton.add(new GameState());
+    });
   }
 
   execute() {
@@ -15,11 +21,14 @@ export class HTMLDisplaySystem extends System {
     if (gameState.lives == 0) {
       this.levelTitle.innerText = `Game Over`;
       this.levelTitle.classList.add('show');
+      this.replayButton.classList.add('show');
     } else if (gameState.levelStarting && gameState.level > 0) {
       this.levelTitle.innerText = `Level ${gameState.level}`;
       this.levelTitle.classList.add('show');
+      this.replayButton.classList.remove('remove');
     } else {
       this.levelTitle.classList.remove('show');
+      this.replayButton.classList.remove('show');
     }
 
     this.scoreDisplay.innerText = `Score: ${gameState.score}`;
