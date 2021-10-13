@@ -1,0 +1,190 @@
+<!doctype html>
+
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+
+    <!-- Valid until Nov 23, 2021-->
+    <meta http-equiv="origin-trial" content="AmW6YjtkXDuz0jJ1YP7yPdaAIJ0b49+fF93EH3g2MEMyHGTOcPQASBcngvOOJwmtlgYGxwDwYxApPEWcqUlP5gMAAABOeyJvcmlnaW4iOiJodHRwczovL3RvamkuZ2l0aHViLmlvOjQ0MyIsImZlYXR1cmUiOiJXZWJHUFUiLCJleHBpcnkiOjE2NDMxNTUxOTl9">
+
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
+
+    <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+
+    <title>SpookyBall!</title>
+
+    <style>
+      html, body {
+        display: flex;
+        height: 100%;
+        width: 100%;
+        margin: 0;
+        background-color: #000000;
+      }
+
+      .container {
+        position: relative;
+        margin: auto;
+        overflow: hidden;
+      }
+
+      .container.error {
+        overflow: visible;
+      }
+
+      .container.error > canvas,
+      .container.error > #level-title,
+      .container.error > #lives-display {
+        display: none;
+      }
+
+      .container.error > #score-display {
+        top: 50%;
+      }
+
+      canvas {
+        display: block;
+        width: 100%;
+        height: 100%;
+      }
+
+      @media (max-aspect-ratio: 3/4) {
+        .container {
+          width: 100%;
+          aspect-ratio: 3/4
+        }
+
+        #left-banner, #right-banner {
+          display: none;
+        }
+      }
+
+      @media (min-aspect-ratio: 3/4) and (max-aspect-ratio: 7/8) {
+        .container {
+          height: 100%;
+          width: 100%;
+        }
+
+        #left-banner, #right-banner {
+          display: none;
+        }
+      }
+
+      @media (min-aspect-ratio: 7/8) {
+        .container {
+          height: 100%;
+          aspect-ratio: 7/8
+        }
+      }
+
+      #left-banner {
+        position: relative;
+        z-index: 5;
+        flex: 1;
+        height: 100%;
+        background-image: url('./media/images/left-banner.png');
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        background-position: right top;
+        margin-right: -39px;
+      }
+
+      #right-banner {
+        position: relative;
+        z-index: 5;
+        flex: 1;
+        height: 100%;
+        background-image: url('./media/images/right-banner.png');
+        background-size: auto 100%;
+        background-repeat: no-repeat;
+        background-position: left top;
+        margin-left: -78px;
+      }
+
+      .dg.main {
+        position: absolute;
+        z-index: 100;
+        top: 1em;
+        right: 1em;
+      }
+
+      #score-display {
+        position: absolute;
+        z-index: 10;
+        top: 10px;
+        width: 100%;
+        text-align: center;
+        font-size: 2em;
+        font-family: 'Creepster', cursive;
+        color: #FFFFFF;
+        white-space: nowrap;
+      }
+
+      #level-title {
+        position: absolute;
+        z-index: 10;
+        bottom: 33%;
+        left: 50%;
+        margin: 0 auto;
+        font-family: 'Creepster', cursive;
+        font-size: 5em;
+        color: #FFFFFF;
+        white-space: nowrap;
+
+        opacity: 0;
+        transform: translate(-50%, 0) scale(1.5);
+        transition-property: opacity, transform;
+        transition-duration: 1s;
+        transition-timing-function: ease-out;
+      }
+
+      #level-title.show {
+        opacity: 1.0;
+        transform: translate(-50%, 0) scale(1.0);
+      }
+
+      #lives-display {
+        position: absolute;
+        z-index: 10;
+        bottom: 2em;
+        left: 2em;
+        width: 100%;
+        font-size: 2em;
+        font-family: 'Creepster', cursive;
+        color: #FFFFFF;
+      }
+
+      #left
+    </style>
+  </head>
+  <body>
+    <div id="left-banner"></div>
+    <div class="container">
+      <canvas></canvas>
+      <div id="score-display">Score: 0</div>
+      <div id="level-title">Spooky!</div>
+      <div id="lives-display">Lives:</div>
+    </div>
+    <div id="right-banner"></div>
+    
+
+    <script type="importmap">
+    {
+        "imports": {
+            "gl-matrix": "./node_modules/gl-matrix/esm/index.js",
+            "webgpu-texture-loader": "./node_modules/web-texture-tool/build/webgpu-texture-loader.js",
+            "dat.gui": "./node_modules/dat.gui/build/dat.gui.module.js",
+            "stats.js": "./node_modules/stats.js/src/Stats.js"
+        }
+    }
+    </script>
+
+    <script src='./node_modules/matter-js/build/matter.js'></script>
+    <script type="module" src='./js/spookyball.js'></script>
+  </body>
+</html>

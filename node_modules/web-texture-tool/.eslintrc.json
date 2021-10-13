@@ -1,0 +1,29 @@
+{
+  "extends": [
+    "google",
+    "plugin:jsdoc/recommended"
+  ],
+  "env": {
+    "es6": true,
+    "browser": true
+  },
+  "parserOptions": {
+    "ecmaVersion": 2020,
+    "sourceType": "module"
+  },
+  "plugins": [
+    "jsdoc"
+  ],
+  "rules": {
+    "max-len": ["error", 120],
+    "valid-jsdoc": ["error", {
+      "prefer": {"returns": "returns"}
+    }]
+  },
+  "ignorePatterns": [
+    "basis_transcoder.js",
+    "libktx.js",
+    "**/third-party",
+    "dds-worker.js"
+  ]
+}

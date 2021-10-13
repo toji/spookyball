@@ -1,0 +1,225 @@
+<!doctype html>
+<!--
+Copyright 2020 Brandon Jones
+
+Permission is hereby granted, free of charge, to any person obtaining a copy of this software and associated
+documentation files (the "Software"), to deal in the Software without restriction, including without limitation the
+rights to use, copy, modify, merge, publish, distribute, sublicense, and/or sell copies of the Software, and to permit
+persons to whom the Software is furnished to do so, subject to the following conditions:
+
+The above copyright notice and this permission notice shall be included in all copies or substantial portions of the
+Software.
+
+THE SOFTWARE IS PROVIDED "AS IS", WITHOUT WARRANTY OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING BUT NOT LIMITED TO THE
+WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE AND NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR
+COPYRIGHT HOLDERS BE LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR
+OTHERWISE, ARISING FROM, OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+-->
+<html>
+  <head>
+    <meta charset='utf-8'>
+    <meta name='viewport' content='width=device-width, initial-scale=1, user-scalable=no'>
+    <meta name='mobile-web-app-capable' content='yes'>
+    <meta name='apple-mobile-web-app-capable' content='yes'>
+
+    <title>Web Texture Tool - Texture Viewer</title>
+
+    <style>
+      html, body {
+        margin: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      canvas {
+        position: absolute;
+        left: 0;
+        top: 0;
+        bottom: 0;
+        right: 0;
+        width: 100%;
+        height: 100%;
+      }
+
+      .dg {
+        z-index: 1 !important;
+      }
+    </style>
+  </head>
+
+  <body>
+    <!--div>Drag and drop a texture file here to view.
+    (Files are loaded locally and not sent over the network)</div-->
+
+    <script type='module'>
+      import {WebGLRenderer} from './webgl-renderer.js';
+      import {WebGPURenderer} from './webgpu-renderer.js';
+
+      import {vec3, mat4} from './gl-matrix/src/gl-matrix.js';
+      import * as Util from './gl-utils.js';
+      import * as dat from './dat.gui.module.js';
+
+      const settings = {
+        renderer: 'WebGL2',
+        mipmaps: true,
+      };
+
+      const gui = new dat.GUI();
+
+      gui.add(settings, "renderer", {
+        WebGL2: 'WebGL2',
+        WebGPU: 'WebGPU'
+      }).onChange(updateRenderer);
+      gui.add(settings, "mipmaps").onChange(() => {
+        if (renderer) {
+          renderer.mipmaps = settings.mipmaps;
+        }
+      });
+
+      const projectionMat = mat4.create();
+
+      const tileColumns = 5;
+      const tileRows = 6;
+      const tiles = [];
+
+      let renderer = null;
+
+      class TextureTile {
+        constructor(column, row) {
+          this.column = column;
+          this.row = row;
+          this.x = ((column - (tileColumns / 2)) * 2) + 1;
+          this.yOffset = (row * 2 + (column * 0.66));
+          this.scroll = 0;
+          this.modelView = mat4.create();
+
+          this.loading = false;
+          this.nextLoad = column * row * 100;
+          this.scale = 0;
+          this.targetScale = 0;
+        }
+
+        refresh() {
+          this.nextLoad = this.column * this.row * 100;
+        }
+
+        update(delta) {
+          mat4.identity(this.modelView);
+          this.scroll += delta / 1000;
+          const y = ((this.yOffset + this.scroll) % (tileRows * 2)) - tileRows;
+          mat4.translate(this.modelView, this.modelView, [this.x, y, 0.0]);
+
+          if (this.scale != this.targetScale) {
+            this.scale += ( this.targetScale - this.scale ) * 0.1;
+          }
+
+          mat4.scale(this.modelView, this.modelView, [this.scale, this.scale, 1.0]);
+        }
+      }
+
+      for (let i = 0; i < tileColumns; ++i) {
+        for (let j = 0; j < tileRows; ++j) {
+          tiles.push(new TextureTile(i, j));
+        }
+      }
+
+      let nextTile = 0;
+
+      let lastTimestamp = 0;
+      function onFrame(timestamp) {
+        let delta = lastTimestamp ? timestamp - lastTimestamp : 0;
+        // Sanity check the timestamp delta. If we get a huge gap (for example, if the tab is backgrounds), clamp it.
+        if (delta > 5000) {
+          delta = 16.66666;
+        }
+        lastTimestamp = timestamp;
+
+        if (settings.pause) {
+          delta = 0;
+        }
+
+        window.requestAnimationFrame(onFrame);
+
+        if (!renderer) {
+          return;
+        }
+
+        for (let tile of tiles) {
+          tile.update(delta);
+        }
+
+        renderer.onFrame(projectionMat, tiles);
+      }
+      window.requestAnimationFrame(onFrame);
+
+      function onResetTextures() {
+        for (let tile of tiles) {
+          tile.refresh();
+        }
+      }
+
+      function updateRenderer() {
+        if (renderer) {
+          document.body.removeChild(renderer.canvas);
+          renderer.destroy();
+          onResetTextures();
+        }
+
+        renderer = null;
+        let newRenderer = null;
+        switch (settings.renderer) {
+          case 'WebGL2':
+            newRenderer = new WebGLRenderer();
+            break;
+          case 'WebGPU':
+            newRenderer = new WebGPURenderer();
+            break;
+        }
+
+        newRenderer.initialize().then(() => {
+          for (let tile of tiles) {
+            newRenderer.initializeTile(tile);
+          }
+
+          renderer = newRenderer;
+          renderer.mipmaps = settings.mipmaps;
+          renderer.textureTool.allowCompressedFormats = settings.compressedFormats;
+
+          const canvas = newRenderer.canvas;
+          document.body.appendChild(canvas);
+          Util.observePixelSize(canvas, (width, height) => {
+            // Stop observing if the renderer has changed.
+            if (!renderer || canvas != renderer.canvas) { return false; }
+
+            canvas.width = width;
+            canvas.height = height;
+
+            const aspect = width/height;
+            mat4.ortho(projectionMat,
+              -tileColumns * aspect, tileColumns * aspect,
+              (tileRows - 1), -(tileRows - 1),
+              -1, 1);
+
+            newRenderer.onCanvasResize(width, height);
+          });
+
+          canvas.addEventListener('dragover', (event) => {
+            event.preventDefault();
+          });
+
+          canvas.addEventListener('drop', (event) => {
+            for (const file of event.dataTransfer.files) {
+              const tile = tiles[nextTile++ % tiles.length];
+              tile.targetScale = 0;
+              renderer.loadTextureFromFile(tile, file).then(() => {
+                tile.targetScale = 1;
+              });
+            }
+            event.preventDefault();
+          });
+        });
+      }
+      updateRenderer();
+    </script>
+  </body>
+</html>

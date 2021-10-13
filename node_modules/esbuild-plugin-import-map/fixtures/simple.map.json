@@ -1,0 +1,5 @@
+{
+    "imports": {
+        "lit-element": "https://cdn.eik.dev/lit-element/v2"
+    }
+}
