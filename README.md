@@ -1,5 +1,9 @@
 # SpookyBall
-SpookyBall is a WebGPU-powered, Halloween-themed, open source breakout game!
+SpookyBall is a WebGPU-powered, Halloween-themed, open source Breakout clone!
+
+Play it now at https://spookyball.com!
+
+![A SpookyBall screenshot](media/images/screenshot.png)
 
 ## Work in Progress
 SpookyBall is a work in progress that will likely gain a trickle of new features over time. Some
