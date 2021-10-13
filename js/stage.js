@@ -108,18 +108,12 @@ export class StageSystem extends System {
       gameState.levelStarting = false;
     }
 
-    if (blockCount == 0) {
+    if (blockCount === 0 || gameState.level === 0) {
+      let ballCount = this.ballQuery.getCount();
       this.startLevel(++gameState.level);
 
-      // Destroy all the balls
-      let ballCount = 0;
-      this.ballQuery.forEach((entity, ball) => {
-        ballCount++;
-        entity.destroy();
-      });
-
       // If you end a level with more than one ball in play, they become extra lives.
-      if (ballCount > 1) {
+      if (ballCount > 1 && gameState.level !== 0) {
         gameState.lives += (ballCount-1);
       }
     }
@@ -128,6 +122,11 @@ export class StageSystem extends System {
   startLevel(level) {
     this.singleton.get(GameState).levelStarting = true;
 
+    // Destroy all the balls
+    this.ballQuery.forEach((entity, ball) => {
+      entity.destroy();
+    });
+    
     // Make sure we've cleared any existing blocks. (Should have happened before this function was
     // called, this is just a safety measure.)
     this.blockQuery.forEach((entity) => {

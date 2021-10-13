@@ -193,6 +193,11 @@ if (debugMode) {
     });
   };
   gui.add(appSettings, 'clearLevel');
+
+  appSettings.restart = () => {
+    world.singleton.add(new GameState());
+  };
+  gui.add(appSettings, 'restart');
 }
 
 const gltfLoader = new GltfLoader(renderer);

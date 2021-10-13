@@ -15,6 +15,8 @@
     <link href="https://fonts.googleapis.com/css2?family=Creepster&display=swap" rel="stylesheet">
 
     <link rel="shortcut icon" href="favicon.ico" type="image/x-icon" />
+    <link rel='icon' type='image/png' sizes='32x32' href='media/images/icon-32.png'>
+    <link rel='icon' type='image/png' sizes='96x96' href='media/images/icon-96.png'>
 
     <title>SpookyBall!</title>
 
@@ -133,7 +135,7 @@
         margin: 0 auto;
         font-family: 'Creepster', cursive;
         font-size: 5em;
-        color: #FFFFFF;
+        color: white;
         white-space: nowrap;
 
         opacity: 0;
@@ -146,6 +148,35 @@
       #level-title.show {
         opacity: 1.0;
         transform: translate(-50%, 0) scale(1.0);
+      }
+
+      #replay-button {
+        position: absolute;
+        z-index: 10;
+        bottom: 25%;
+        left: 50%;
+        margin: 0 auto;
+
+        font-family: 'Creepster', cursive;
+        font-size: 2.5em;
+        color: white;
+        white-space: nowrap;
+
+        border: 1px solid white;
+        border-radius: 5px;
+        background: transparent;
+        padding: 0.25em;
+
+        display: none;
+        transform: translate(-50%, 0) scale(1.0);
+      }
+
+      #replay-button:hover {
+        transform: translate(-50%, 0) scale(1.1);
+      }
+
+      #replay-button.show {
+        display: block;
       }
 
       #lives-display {
@@ -168,6 +199,7 @@
       <canvas></canvas>
       <div id="score-display">Score: 0</div>
       <div id="level-title">Spooky!</div>
+      <button id="replay-button">Replay?</button>
       <div id="lives-display">Lives:</div>
     </div>
     <div id="right-banner"></div>
