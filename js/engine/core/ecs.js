@@ -352,5 +352,6 @@ class Query {
 
       count++;
     }
+    return count;
   }
 }
