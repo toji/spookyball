@@ -3,6 +3,8 @@ import { KeyboardState, GamepadState } from './engine/core/input.js';
 import { Physics2DBody } from './physics-2d.js';
 import { FlyingControls } from './engine/controls/flying-controls.js';
 
+const PADDLE_SPEED = 62;
+
 export class GameState {
   level = 0;
   levelStarting = true;
@@ -101,7 +103,7 @@ export class PlayerSystem extends System {
     }
 
     // Ensure we can never move too fast.
-    movement = Math.min(1, Math.max(-1, movement));
+    movement = Math.min(1, Math.max(-1, movement)) * delta * PADDLE_SPEED;
 
     this.paddleQuery.forEach((entity, paddle, body) => {
       paddle.x += movement;
