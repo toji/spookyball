@@ -111,7 +111,7 @@ export class World {
   #nextSystemId = 1;
   #singletonEntity;
   #lastTime = performance.now() / 1000;
-  
+
   timeScale = 1.0;
   paused = false;
 
@@ -201,7 +201,16 @@ export class World {
 
     for (const system of this.#worldData.orderedSystems) {
       if (system.enabled && (!this.paused || system.executesWhenPaused)) {
-        system.execute(delta, time, ...args);
+        if (system.fixedStep === 0) {
+          system.execute(delta, time, ...args);
+        } else {
+          let fixedStepDelta = system.fixedStepDeltaRemainder + delta;
+          while (fixedStepDelta >= system.fixedStep) {
+            system.execute(system.fixedStep, time, ...args);
+            fixedStepDelta -= system.fixedStep;
+          }
+          system.fixedStepDeltaRemainder = fixedStepDelta;
+        }
       }
     }
   }
@@ -213,6 +222,8 @@ export class System {
   stage = 0;
   id = 0;
   executesWhenPaused = true;
+  fixedStep = 0;
+  fixedStepDeltaRemainder = 0;
 
   constructor(world, worldData) {
     this.world = world;
@@ -283,7 +294,7 @@ class Query {
       } else {
         queryEntities = queryEntities.filter(entityId => componentEntities.includes(entityId));
       }
-      
+
       // Early out if we've reduced the entity set to zero.
       if (queryEntities.length === 0) {
         return;
@@ -328,7 +339,7 @@ class Query {
       } else {
         queryEntities = queryEntities.filter(entityId => componentEntities.includes(entityId));
       }
-      
+
       // Early out if we've reduced the entity set to zero.
       if (queryEntities.length === 0) {
         return 0;

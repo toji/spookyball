@@ -47,17 +47,34 @@ export class Physics2DBody {
   }
 }
 
+class Physics2DClearCollisionsSystem extends System {
+  stage = Stage.PreFrameLogic - 0.1; // Should happen just before the physics update
+
+  init() {
+    this.collisionsQuery = this.query(Collisions);
+  }
+
+  execute() {
+    // Clear all the collisions from previous frames.
+    this.collisionsQuery.forEach((entity) => {
+      entity.remove(Collisions);
+    });
+  }
+}
+
 export class Physics2DSystem extends System {
   stage = Stage.PreFrameLogic;
   executesWhenPaused = false;
+  fixedStep = 0.0166666;
 
-  init(gpu) {
+  init() {
+    this.world.registerSystem(Physics2DClearCollisionsSystem)
+
     this.engine = Matter.Engine.create({ gravity: { scale: 1, x: 0, y: 0 } });
     // Prevent objects from coming to a rest if they collide
     Matter.Resolver._restingThresh = 0.001;
 
     this.bodyQuery = this.query(Physics2DBody);
-    this.collisionsQuery = this.query(Collisions);
 
     Matter.Events.on(this.engine, 'collisionStart', (event) => {
       for (const pair of event.pairs) {
@@ -89,11 +106,6 @@ export class Physics2DSystem extends System {
   }
 
   execute(delta, time) {
-    // Clear all the collisions from previous frames.
-    this.collisionsQuery.forEach((entity) => {
-      entity.remove(Collisions);
-    });
-
     // Tick the physics engine
     Matter.Engine.update(this.engine, delta);
 
