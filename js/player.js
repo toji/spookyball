@@ -36,7 +36,9 @@ export class PlayerSystem extends System {
 
     gltfLoader.fromUrl('./media/models/paddle-compressed.glb').then(scene => {
       const paddle = scene.createInstance(this.world);
-      //paddle.add(scene.animations['ms02_05_Idle']);
+      if (scene.animations['ms02_05_Idle']) {
+        paddle.add(scene.animations['ms02_05_Idle']);
+      }
       paddle.add(
         new Paddle(),
         body
