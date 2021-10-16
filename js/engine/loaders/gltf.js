@@ -342,10 +342,7 @@ export class GltfScene {
 
     if (node.children) {
       for (const child of node.children) {
-        const childNode = this.nodes[child];
-        if (node.jointNode || !childNode.jointNode) {
-          transform.addChild(transforms.getTransform(child));
-        }
+        transform.addChild(transforms.getTransform(child));
         this.#createNodeInstance(child, world, transforms, group);
       }
     }

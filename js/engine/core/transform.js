@@ -155,9 +155,6 @@ export class Transform {
         this.#scale);
       this.#localMatrixDirty = false;
     }
-    if (this.#localMatrix.every((value) => value == 0)) {
-      console.warn(`Local Matrix empty. wasDirty: ${wasDirty}`);
-    }
     return this.#localMatrix;
   }
 
