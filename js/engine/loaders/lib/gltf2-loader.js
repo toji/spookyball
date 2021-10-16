@@ -656,6 +656,9 @@ export class Gltf2Loader {
           jointPromises.push(resolveNode(joint));
         }
         skinPromises.push(Promise.all(jointPromises).then(joints => {
+          for (const joint of joints) {
+            joint.jointNode = true;
+          }
           skin.jointNodes = joints;
         }));
 
