@@ -20,7 +20,7 @@ export function DefaultVertexSource(layout, skinned = false) { return wgsl`
     var output : VertexOutput;
 
 #if ${skinned}
-    let modelMatrix = getInstanceMatrix(input) * getSkinMatrix(input);
+    let modelMatrix = getSkinMatrix(input);
 #else
     let modelMatrix = getInstanceMatrix(input);
 #endif

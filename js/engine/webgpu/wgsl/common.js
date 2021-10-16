@@ -57,7 +57,6 @@ export const GetSkinMatrix = `
                      joint1 * input.weights.y +
                      joint2 * input.weights.z +
                      joint3 * input.weights.w;
-
     return skinMatrix;
   }
 `;

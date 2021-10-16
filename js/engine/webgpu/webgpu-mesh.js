@@ -46,7 +46,7 @@ export class WebGPUMeshSystem extends WebGPUSystem {
           resource: { buffer: skin.jointBuffer.gpuBuffer },
         }, {
           binding: 1,
-          resource: { buffer: skin.ibmBuffer.gpuBuffer },
+          resource: { buffer: skin.ibmBuffer.gpuBuffer, offset: skin.ibmOffset },
         }]
       });
 
