@@ -342,7 +342,10 @@ export class GltfScene {
 
     if (node.children) {
       for (const child of node.children) {
-        transform.addChild(transforms.getTransform(child))
+        const childNode = this.nodes[child];
+        if (node.jointNode || !childNode.jointNode) {
+          transform.addChild(transforms.getTransform(child));
+        }
         this.#createNodeInstance(child, world, transforms, group);
       }
     }
@@ -395,7 +398,7 @@ export class GltfLoader {
       gltfScene.meshes = result.meshes;
       gltfScene.materials = result.materials;
 
-      gltfScene.animations = new Map();
+      gltfScene.animations = {};
       for (const animation of result.animations) {
         gltfScene.animations[animation.name] = animation;
       }

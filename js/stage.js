@@ -55,19 +55,19 @@ export class StageSystem extends System {
     gltfLoader.fromUrl('./media/models/crow-compressed.glb').then(scene => {
       let crow = scene.createInstance(this.world);
       let transform = crow.get(Transform);
-      transform.position[0] = 10;
-      transform.position[1] = 2;
-      transform.position[2] = -4.7;
-      quat.rotateY(transform.orientation, transform.orientation, -0.2);
+      transform.position[0] = 20.7;
+      transform.position[1] = 4.1;
+      transform.position[2] = -7.4;
+      quat.rotateY(transform.orientation, transform.orientation, -0.7);
       crow.add(scene.animations['Idle_short']);
       crow.add(new AnimationTiming({ startTime: 0 }));
 
       crow = scene.createInstance(this.world);
       transform = crow.get(Transform);
-      transform.position[0] = -1.2;
-      transform.position[1] = 4.2;
-      transform.position[2] = -12.2;
-      quat.rotateY(transform.orientation, transform.orientation, 0.1);
+      transform.position[0] = -3.8;
+      transform.position[1] = 8.5;
+      transform.position[2] = -24;
+      quat.rotateY(transform.orientation, transform.orientation, 0.3);
       crow.add(scene.animations['Idle_short']);
       crow.add(new AnimationTiming({ startTime: 5 }));
     });

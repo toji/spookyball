@@ -4,6 +4,7 @@ import { Camera } from './engine/core/camera.js';
 import { AmbientLight, DirectionalLight, ShadowCastingLight } from './engine/core/light.js';
 import { GltfLoader } from './engine/loaders/gltf.js';
 import { WebGPUWorld } from './engine/webgpu/webgpu-world.js';
+import { BoneVisualizerSystem } from './engine/debug/bone-visualizer.js';
 
 import { BallSystem } from './ball.js';
 import { PlayerSystem, GameState } from './player.js';
@@ -77,6 +78,7 @@ const appSettings = {
   pause: false,
   freeCamera: false,
   showPhysicsBodies: false,
+  showJoints: false,
   enableBloom: true,
   renderTarget: 'default',
 };
@@ -129,6 +131,14 @@ if (debugMode) {
       world.registerRenderSystem(Physics2DVisualizerSystem);
     } else {
       world.removeSystem(Physics2DVisualizerSystem);
+    }
+  });
+
+  gui.add(appSettings, 'showJoints').onChange(() => {
+    if (appSettings.showJoints) {
+      world.registerRenderSystem(BoneVisualizerSystem);
+    } else {
+      world.removeSystem(BoneVisualizerSystem);
     }
   });
 
