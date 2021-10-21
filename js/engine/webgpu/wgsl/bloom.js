@@ -25,10 +25,18 @@ fn getGaussianBlur(texCoord : vec2<f32>) -> vec4<f32> {
 
   sum = sum + textureSample(bloomTexture, bloomSampler, texCoord) * weights[0];
 
-  for (var i : i32 = 1; i < 3; i = i + 1) {
-    sum = sum + textureSample(bloomTexture, bloomSampler, texCoord + step * f32(i)) * weights[i];
-    sum = sum + textureSample(bloomTexture, bloomSampler, texCoord - step * f32(i)) * weights[i];
-  }
+  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord + step * 1.0) * weights[1];
+  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord - step * 1.0) * weights[1];
+
+  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord + step * 2.0) * weights[2];
+  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord - step * 2.0) * weights[2];
+
+  // This is more compact than the unrolled loop above, but was causing corruption on older Mac Intel GPUs.
+  //for (var i : i32 = 1; i < 3; i = i + 1) {
+  //  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord + step * f32(i)) * weights[i];
+  //  sum = sum + textureSample(bloomTexture, bloomSampler, texCoord - step * f32(i)) * weights[i];
+  //}
+
   return vec4<f32>(sum.rgb, 1.0);
 }
 `;
