@@ -1,4 +1,7 @@
 export const WEBGPU_DEFAULT_FLAGS = {
+  // Adapter settings
+  powerPreference: "high-performance",
+
   // Render target flags
   colorFormat: undefined, // Undefined indicates getPrefferedFormat should be used
   depthFormat: 'depth24plus',

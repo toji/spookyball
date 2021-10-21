@@ -73,6 +73,7 @@ function getQuality() {
 
 const rendererFlags = getQuality();
 rendererFlags.lucasMode = QueryArgs.getBool('lucasMode', false);
+rendererFlags.powerPreference = QueryArgs.getString('powerPreference');
 
 const appSettings = {
   pause: false,
@@ -125,7 +126,7 @@ if (debugMode) {
   gui.add(appSettings, 'pause').onChange(() => {
     world.paused = appSettings.pause;
   });
-  
+
   gui.add(appSettings, 'showPhysicsBodies').onChange(() => {
     if (appSettings.showPhysicsBodies) {
       world.registerRenderSystem(Physics2DVisualizerSystem);
@@ -174,7 +175,7 @@ if (debugMode) {
     world.query(WebGPUDebugTextureView).forEach((entity) => {
       entity.destroy();
     });
-  
+
     switch (appSettings.renderTarget) {
       case 'shadow':
         world.create(new WebGPUDebugTextureView(renderer.shadowDepthTexture.createView(), true));
@@ -192,10 +193,10 @@ if (debugMode) {
         world.removeSystem(WebGPUTextureDebugSystem);
         return;
     }
-  
+
     world.registerRenderSystem(WebGPUTextureDebugSystem);
   });
-  
+
   // Mark each block as dead when you click the "clearLevel" debug button.
   appSettings.clearLevel = () => {
     world.query(Block).forEach((entity, block) => {
