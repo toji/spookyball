@@ -25,7 +25,7 @@ export class WebGPURenderer extends Renderer {
     this.shadowAtlasSize *= flags.shadowResolutionMultiplier;
 
     this.adapter = await navigator.gpu.requestAdapter({
-      powerPreference: "high-performance"
+      powerPreference: flags.powerPreference,
     });
 
     // Determine which of the desired features can be enabled for this device.
