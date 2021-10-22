@@ -64,9 +64,9 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     this.#zRange[0] = camera.zRange[0];
     this.#zRange[1] = camera.zRange[1];
 
-    const commandEncoder = gpu.device.createCommandEncoder();
+    const commandEncoder = gpu.device.createCommandEncoder({ label: 'Cluster Bounds Command Encoder'});
 
-    const passEncoder = commandEncoder.beginComputePass();
+    const passEncoder = commandEncoder.beginComputePass({ label: 'Cluster Bounds Compute Pass'});
     passEncoder.setPipeline(this.boundsPipeline);
     passEncoder.setBindGroup(0, camera.bindGroup);
     passEncoder.setBindGroup(1, camera.clusterBoundsBindGroup);

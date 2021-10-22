@@ -237,7 +237,7 @@ world.create(
     color: [0.75, 0.8, 1.0],
     intensity: 1.8
   }),
-  new ShadowCastingLight({ width: 75, height: 50, zNear: 0.1, up: [0, 1, 0] }),
+  new ShadowCastingLight({ textureSize: 1024, width: 75, height: 50, zNear: 0.1, up: [0, 1, 0] }),
   new Transform({ position: [26, 25, 36] }),
   new AmbientLight(0.075, 0.075, 0.075)
 );

@@ -114,7 +114,7 @@ export class BallSystem extends System {
     this.bonusQuery.forEach((entity, transform) => {
       // Launch the bonus ball in a random direction
       const direction = vec3.fromValues((Math.random() * 2.0 - 1.0), 0, -(Math.random() * 2.0 - 1.0));
-      this.spawnBall(transform.position, direction);
+      this.spawnBall([transform.position[0], 1, transform.position[1]], direction);
     });
 
     // If there are no balls currently in play, spawn a new one.
