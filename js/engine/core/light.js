@@ -47,9 +47,9 @@ export class ShadowCastingLight {
   up = new Float32Array(3);
 
   constructor(options) {
-    this.textureSize = options.textureSize || 1024;
+    this.textureSize = options.textureSize || 512; // For a point light this would be per-side
     this.zNear = options.zNear || 1.0;
-    this.zFar = options.zFAr || 128.0;
+    this.zFar = options.zFar || 128.0;
 
     // Only applies to directional light
     this.width = options.width || 10;

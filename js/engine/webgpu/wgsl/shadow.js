@@ -31,7 +31,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
     vec2<f32>(0.0, 0.0)
   );
 #else
-  ERROR: Bad flag. shadowSampleCount must be 16, 4, or 1
+  ERROR: Bad flag. shadowSampleCount must be 16, 4, 2, or 1
 #endif
 
   let shadowSampleCount = ${flags.shadowSamples}u;
@@ -51,24 +51,26 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
       return 1.0; // Not a shadow casting light
     }
 
-    let texelSize = 1.0 / vec2<f32>(textureDimensions(shadowTexture, 0));
-
     let viewport = shadow.properties[shadowIndex].viewport;
     let lightPos = shadow.properties[shadowIndex].viewProj * vec4<f32>(worldPos, 1.0);
 
     // Put into texture coordinates
     let shadowPos = vec3<f32>(
-      ((lightPos.xy / lightPos.w) ) * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5, 0.5),
+      ((lightPos.xy / lightPos.w)) * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5, 0.5),
       lightPos.z / lightPos.w);
 
     let viewportPos = vec2<f32>(viewport.xy + shadowPos.xy * viewport.zw);
+
+    let texelSize = 1.0 / vec2<f32>(textureDimensions(shadowTexture, 0));
+    let clampRect = vec4<f32>(viewport.xy - texelSize, (viewport.xy+viewport.zw) + texelSize);
 
     // Percentage Closer Filtering
     var visibility : f32 = 0.0;
     for (var i : u32 = 0u; i < shadowSampleCount; i = i + 1u) {
       visibility = visibility + textureSampleCompare(
         shadowTexture, shadowSampler,
-        viewportPos + shadowSampleOffsets[i] * texelSize, shadowPos.z - 0.003);
+        clamp(viewportPos + shadowSampleOffsets[i] * texelSize, clampRect.xy, clampRect.zw),
+        shadowPos.z - 0.003);
     }
     return visibility / f32(shadowSampleCount);
   }

@@ -1,27 +1,26 @@
 import { WebGPUSystem } from './webgpu-system.js';
 import { Stage } from '../core/stage.js';
 import { Transform } from '../core/transform.js';
+import { DirectionalLight, ShadowCastingLight } from '../core/light.js';
+import { TextureAtlasAllocator } from '../util/texture-atlas-allocator.js';
 import { ShadowFragmentSource,  } from './wgsl/shadow.js';
 import { WebGPUCameraBase } from './webgpu-camera.js';
 
 import { mat4, vec3, vec4 } from 'gl-matrix';
-import { DirectionalLight, ShadowCastingLight } from '../core/light.js';
 
 const tmpVec3 = vec3.create();
 
 export class WebGPUShadowCamera extends WebGPUCameraBase {
-  constructor(gpu, size) {
+  constructor(gpu, rect) {
     super(gpu)
     const device = gpu.device;
 
-    size *= gpu.flags.shadowResolutionMultiplier;
+    this.outputSize[0] = rect.width;
+    this.outputSize[1] = rect.height;
 
-    this.outputSize[0] = size;
-    this.outputSize[1] = size;
-
-    // TODO: Allocate this dynamically from the larger texture
+    // Build a 1px border into the viewport so that we don't get blending artifacts.
     this.viewport = [
-      1, 1, size-2, size-2, 0.0, 1.0
+      rect.x+1, rect.y+1, rect.width-2, rect.height-2, 0.0, 1.0
     ];
 
     const dummyStorageBuffer = device.createBuffer({
@@ -76,6 +75,8 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     this.shadowCastingLightQuery = this.query(ShadowCastingLight);
     this.shadowCameraQuery = this.query(WebGPUShadowCamera);
     this.shadowUpdateFrequency = gpu.flags.shadowUpdateFrequency;
+
+    this.allocator = new TextureAtlasAllocator(gpu.shadowAtlasSize);
   }
 
   getOrCreateShadowPipeline(gpu, webgpuPipeline) {
@@ -132,7 +133,9 @@ export class WebGPUShadowSystem extends WebGPUSystem {
 
         let shadowCamera = entity.get(WebGPUShadowCamera);
         if (!shadowCamera) {
-          shadowCamera = new WebGPUShadowCamera(gpu, shadowCaster.textureSize);
+          const shadowMapSize = shadowCaster.textureSize * gpu.flags.shadowResolutionMultiplier;
+          const shadowAtlasRect = this.allocator.allocate(shadowMapSize);
+          shadowCamera = new WebGPUShadowCamera(gpu, shadowAtlasRect);
           entity.add(shadowCamera);
         }
 
@@ -233,8 +236,6 @@ export class WebGPUShadowSystem extends WebGPUSystem {
             if (pipeline.instanceSlot >= 0) {
               passEncoder.setVertexBuffer(pipeline.instanceSlot, instanceBuffer, instances.bufferOffset);
             }
-
-            
 
             if (ib) {
               passEncoder.drawIndexed(geometry.drawCount, instances.instanceCount);
