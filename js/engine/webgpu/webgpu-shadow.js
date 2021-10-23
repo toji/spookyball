@@ -21,6 +21,15 @@ const pointShadowLookDirs = [
   vec3.fromValues(0, 0, -1), // NEGATIVE_Z
 ];
 
+const pointShadowUpDirs = [
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 0, -1),
+  vec3.fromValues(0, 0, -1),
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 1, 0),
+];
+
 export class WebGPUShadowCamera extends WebGPUCameraBase {
   constructor(gpu, rect) {
     super(gpu)
@@ -226,7 +235,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
 
           vec3.copy(shadowCamera.position, lightPos);
           vec3.add(tmpVec3, shadowCamera.position, lookDir);
-          mat4.lookAt(shadowCamera.view, shadowCamera.position, tmpVec3, shadowCaster.up);
+          mat4.lookAt(shadowCamera.view, shadowCamera.position, tmpVec3, pointShadowUpDirs[i]);
 
           // TODO: Can the far plane at least be derived from the light range?
           mat4.perspectiveZO(shadowCamera.projection, Math.PI * 0.5, 1, shadowCaster.zNear, shadowCaster.zFar);

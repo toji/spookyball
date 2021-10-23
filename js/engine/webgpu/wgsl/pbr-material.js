@@ -216,7 +216,7 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
       light.intensity = globalLights.dirIntensity;
 
 #if ${flags.shadowsEnabled}
-      let lightVis = lightVisibility(0u, input.worldPos);
+      let lightVis = dirLightVisibility(input.worldPos);
 #else
       let lightVis = 1.0;
 #endif
@@ -241,7 +241,7 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
       light.intensity = globalLights.lights[i].intensity;
 
 #if ${flags.shadowsEnabled}
-      let lightVis = lightVisibility(i+1u, input.worldPos);
+      let lightVis = pointLightVisibility(i, input.worldPos, light.pointToLight);
 #else
       let lightVis = 1.0;
 #endif
