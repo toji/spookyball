@@ -1,9 +1,6 @@
 import { System, Tag } from './engine/core/ecs.js';
 import { Transform } from './engine/core/transform.js';
-import { SphereGeometry } from './engine/geometry/sphere.js';
-import { PBRMaterial } from './engine/core/materials.js';
-import { Mesh } from './engine/core/mesh.js';
-import { PointLight } from './engine/core/light.js';
+import { PointLight, ShadowCastingLight } from './engine/core/light.js';
 
 import { Physics2DBody } from './physics-2d.js';
 import { Paddle, GameState } from './player.js';
@@ -114,7 +111,7 @@ export class BallSystem extends System {
     this.bonusQuery.forEach((entity, transform) => {
       // Launch the bonus ball in a random direction
       const direction = vec3.fromValues((Math.random() * 2.0 - 1.0), 0, -(Math.random() * 2.0 - 1.0));
-      this.spawnBall([transform.position[0], 1, transform.position[1]], direction);
+      this.spawnBall([transform.position[0], 1, transform.position[1]], direction, ballCount < 2);
     });
 
     // If there are no balls currently in play, spawn a new one.
@@ -125,16 +122,16 @@ export class BallSystem extends System {
         gameState.lives--;
       }
       if (!gameState.levelStarting && gameState.lives > 0) {
-        this.spawnBall([paddleState.x, 1, 23]);
+        this.spawnBall([paddleState.x, 1, 23], null, true);
       }
     }
 
     if (gpu.flags.lucasMode && waitingBallCount == 0 && paddleState) {
-      this.spawnBall([paddleState.x, 1, 23]);
+      this.spawnBall([paddleState.x, 1, 23], null, true);
     }
   }
 
-  spawnBall(position, velocity = null) {
+  spawnBall(position, velocity = null, castShadow = false) {
     if (!this.ballScene) {
       return;
     }
@@ -162,9 +159,13 @@ export class BallSystem extends System {
       ballState,
       transform,
       body,
-      new PointLight({ color: [0.5, 1, 1], intensity: 10, range: 10 }),
+      new PointLight({ color: [0.5, 1, 1], intensity: 100, range: 25 }),
       new ImpactDamage(1),
     );
+
+    if (castShadow) {
+      ball.add(new ShadowCastingLight({ textureSize: 256, zNear: 0.75, zFar: 30 }));
+    }
 
     ball.name = 'The Ball';
 

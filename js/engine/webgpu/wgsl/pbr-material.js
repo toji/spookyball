@@ -240,8 +240,14 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
       light.color = globalLights.lights[i].color;
       light.intensity = globalLights.lights[i].intensity;
 
+#if ${flags.shadowsEnabled}
+      let lightVis = lightVisibility(i+1u, input.worldPos);
+#else
+      let lightVis = 1.0;
+#endif
+
       // calculate per-light radiance and add to outgoing radiance Lo
-      Lo = Lo + lightRadiance(light, surface);
+      Lo = Lo + lightRadiance(light, surface) * lightVis;
     }
 
     let ambient = globalLights.ambient * surface.albedo * surface.ao;

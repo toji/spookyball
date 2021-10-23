@@ -13,7 +13,6 @@ export class Renderer {
 
   maxLightCount = 512;
   maxShadowCasters = 64;
-  shadowAtlasSize = 1024;
 
   get textureLoader() {
     throw new Error('textureLoader getter must be overriden in an extended class.');

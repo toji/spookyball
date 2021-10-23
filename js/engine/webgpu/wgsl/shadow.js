@@ -67,7 +67,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
     // Percentage Closer Filtering
     var visibility : f32 = 0.0;
     for (var i : u32 = 0u; i < shadowSampleCount; i = i + 1u) {
-      visibility = visibility + textureSampleCompare(
+      visibility = visibility + textureSampleCompareLevel(
         shadowTexture, shadowSampler,
         clamp(viewportPos + shadowSampleOffsets[i] * texelSize, clampRect.xy, clampRect.zw),
         shadowPos.z - 0.003);
