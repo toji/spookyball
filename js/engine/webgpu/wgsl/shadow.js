@@ -120,7 +120,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
     let viewportPos = vec2<f32>(viewport.xy + shadowPos.xy * viewport.zw);
 
     let texelSize = 1.0 / vec2<f32>(textureDimensions(shadowTexture, 0));
-    let clampRect = vec4<f32>(viewport.xy - texelSize, (viewport.xy+viewport.zw) + texelSize);
+    let clampRect = vec4<f32>(viewport.xy, (viewport.xy+viewport.zw));
 
     // Percentage Closer Filtering
     var visibility : f32 = 0.0;
@@ -128,7 +128,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
       visibility = visibility + textureSampleCompareLevel(
         shadowTexture, shadowSampler,
         clamp(viewportPos + shadowSampleOffsets[i] * texelSize, clampRect.xy, clampRect.zw),
-        shadowPos.z - 0.006);
+        shadowPos.z - 0.01);
     }
     return visibility / f32(shadowSampleCount);
   }
