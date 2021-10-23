@@ -30,7 +30,9 @@ import { FlyingControls, FlyingControlsSystem } from './engine/controls/flying-c
 const debugMode = QueryArgs.getBool('debug', false);
 
 function getQuality() {
-  const HIGH_QUALITY = {}; // Defaults
+  const HIGH_QUALITY = {
+    ballShadows: true
+  }; // Defaults
 
   const MEDIUM_QUALITY = {
     shadowSamples: 4,

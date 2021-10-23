@@ -111,7 +111,7 @@ export class BallSystem extends System {
     this.bonusQuery.forEach((entity, transform) => {
       // Launch the bonus ball in a random direction
       const direction = vec3.fromValues((Math.random() * 2.0 - 1.0), 0, -(Math.random() * 2.0 - 1.0));
-      this.spawnBall([transform.position[0], 1, transform.position[1]], direction, ballCount < 2);
+      this.spawnBall([transform.position[0], 1, transform.position[2]], direction, ballCount < 2 && gpu.flags.ballShadows);
     });
 
     // If there are no balls currently in play, spawn a new one.
@@ -122,12 +122,12 @@ export class BallSystem extends System {
         gameState.lives--;
       }
       if (!gameState.levelStarting && gameState.lives > 0) {
-        this.spawnBall([paddleState.x, 1, 23], null, true);
+        this.spawnBall([paddleState.x, 1, 23], null, gpu.flags.ballShadows);
       }
     }
 
     if (gpu.flags.lucasMode && waitingBallCount == 0 && paddleState) {
-      this.spawnBall([paddleState.x, 1, 23], null, true);
+      this.spawnBall([paddleState.x, 1, 23], null, gpu.flags.ballShadows);
     }
   }
 
@@ -159,12 +159,12 @@ export class BallSystem extends System {
       ballState,
       transform,
       body,
-      new PointLight({ color: [0.5, 1, 1], intensity: 100, range: 25 }),
+      new PointLight({ color: [0.0, 0.5, 1], intensity: 45, range: 30 }),
       new ImpactDamage(1),
     );
 
     if (castShadow) {
-      ball.add(new ShadowCastingLight({ textureSize: 256, zNear: 0.75, zFar: 30 }));
+      ball.add(new ShadowCastingLight({ textureSize: 256, zNear: 0.8, zFar: 30 }));
     }
 
     ball.name = 'The Ball';
