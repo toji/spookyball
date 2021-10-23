@@ -82,6 +82,7 @@ const appSettings = {
   freeCamera: false,
   showPhysicsBodies: false,
   showJoints: false,
+  moonlight: true,
   enableBloom: true,
   renderTarget: 'default',
 };
@@ -167,6 +168,14 @@ if (debugMode) {
     });
   }
 
+  gui.add(appSettings, 'moonlight').onChange(() => {
+    if (appSettings.moonlight) {
+      moonlight.intensity = 1.8;
+    } else {
+      moonlight.intensity = 0.0
+    }
+  });
+
   gui.add(appSettings, 'renderTarget', {
     'Default': 'default',
     'Shadow': 'shadow',
@@ -232,13 +241,15 @@ const camera = world.create(
 );
 
 // Add some lights
+const moonlight = new DirectionalLight({
+  direction: [0.3, 0.3, 0.5],
+  color: [0.75, 0.8, 1.0],
+  intensity: 1.8
+});
+
 world.create(
   // Spooky moonlight
-  new DirectionalLight({
-    direction: [0.3, 0.3, 0.5],
-    color: [0.75, 0.8, 1.0],
-    intensity: 1.8
-  }),
+  moonlight,
   new ShadowCastingLight({ textureSize: 1024, width: 75, height: 50, zNear: 0.1, up: [0, 1, 0] }),
   new Transform({ position: [26, 25, 36] }),
   new AmbientLight(0.075, 0.075, 0.075)

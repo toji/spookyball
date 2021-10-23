@@ -215,7 +215,7 @@ export class World {
       }
     }
   }
-}s
+}
 
 export class System {
   #worldData;
