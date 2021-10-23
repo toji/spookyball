@@ -121,7 +121,7 @@ export class LightSystem extends System {
     this.pointLightQuery.forEach((entity, light) => {
       if (light.intensity > 0) {
         const positionRange = new Float32Array(arrayBuffer, pointLightByteOffset, 4);
-        const colorIntensity = new Float32Array(arrayBuffer, pointLightByteOffset + 16, 4);
+        const colorIntensity = new Float32Array(arrayBuffer, pointLightByteOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 4);
 
         const transform = entity.get(Transform);
         if (transform) {

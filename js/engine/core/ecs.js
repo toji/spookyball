@@ -113,6 +113,7 @@ export class World {
   #lastTime = performance.now() / 1000;
 
   timeScale = 1.0;
+  fixedStepEpsilon = 0.001;
   paused = false;
 
   constructor() {
@@ -205,7 +206,7 @@ export class World {
           system.execute(delta, time, ...args);
         } else {
           let fixedStepDelta = system.fixedStepDeltaRemainder + delta;
-          while (fixedStepDelta >= system.fixedStep) {
+          while (fixedStepDelta+this.fixedStepEpsilon >= system.fixedStep) {
             system.execute(system.fixedStep, time, ...args);
             fixedStepDelta -= system.fixedStep;
           }

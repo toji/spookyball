@@ -19,6 +19,8 @@ export class WebGPURenderer extends Renderer {
   bufferManager = null;
   #textureLoader = null;
 
+  shadowAtlasSize = 2048;
+
   async init(canvas, flags) {
     this.flags = flags;
 

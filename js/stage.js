@@ -86,7 +86,8 @@ export class StageSystem extends System {
 
         // Make it shake a bit as it comes up.
         transform.position[0] = block.x + (Math.random() * 0.4 - 0.2);
-        transform.position[1] = block.buried;
+        // Slight offset to account for the fact that the ground is not at Y=0;
+        transform.position[1] = block.buried - 0.6;
         transform.position[2] = block.y + (Math.random() * 0.2 - 0.1);
 
         // Only add the physics body once the block has fully risen.

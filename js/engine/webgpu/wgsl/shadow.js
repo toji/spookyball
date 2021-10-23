@@ -45,8 +45,8 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
   };
   [[group(${group}), binding(7)]] var<storage, read> shadow : LightShadows;
 
-  fn lightVisibility(lightIndex : u32, worldPos : vec3<f32>) -> f32 {
-    let shadowIndex = lightShadowTable.light[lightIndex];
+  fn dirLightVisibility(worldPos : vec3<f32>) -> f32 {
+    let shadowIndex = lightShadowTable.light[0u];
     if (shadowIndex == -1) {
       return 1.0; // Not a shadow casting light
     }
@@ -67,10 +67,68 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
     // Percentage Closer Filtering
     var visibility : f32 = 0.0;
     for (var i : u32 = 0u; i < shadowSampleCount; i = i + 1u) {
-      visibility = visibility + textureSampleCompare(
+      visibility = visibility + textureSampleCompareLevel(
         shadowTexture, shadowSampler,
         clamp(viewportPos + shadowSampleOffsets[i] * texelSize, clampRect.xy, clampRect.zw),
         shadowPos.z - 0.003);
+    }
+    return visibility / f32(shadowSampleCount);
+  }
+
+  // First two components of the return value are the texCoord, the third component is the face index.
+  fn getCubeFace(v : vec3<f32>) -> i32{
+    let vAbs = abs(v);
+
+    if (vAbs.z >= vAbs.x && vAbs.z >= vAbs.y) {
+      if (v.z < 0.0) {
+        return 5;
+      }
+      return 4;
+    }
+    
+    if (vAbs.y >= vAbs.x) {
+      if (v.y < 0.0) {
+        return 3;
+      }
+      return 2;
+    }
+
+    if (v.x < 0.0) {
+      return 1;
+    }
+    return 0;
+  }
+
+  fn pointLightVisibility(lightIndex : u32, worldPos : vec3<f32>, pointToLight : vec3<f32>) -> f32 {
+    var shadowIndex = lightShadowTable.light[lightIndex+1u];
+    if (shadowIndex == -1) {
+      return 1.0; // Not a shadow casting light
+    }
+
+    // Determine which face of the cubemap we're sampling from
+    // TODO: Allow for PBR sampling across seams
+    shadowIndex = shadowIndex + getCubeFace(pointToLight * -1.0);
+
+    let viewport = shadow.properties[shadowIndex].viewport;
+    let lightPos = shadow.properties[shadowIndex].viewProj * vec4<f32>(worldPos, 1.0);
+
+    // Put into texture coordinates
+    let shadowPos = vec3<f32>(
+      ((lightPos.xy / lightPos.w)) * vec2<f32>(0.5, -0.5) + vec2<f32>(0.5, 0.5),
+      lightPos.z / lightPos.w);
+
+    let viewportPos = vec2<f32>(viewport.xy + shadowPos.xy * viewport.zw);
+
+    let texelSize = 1.0 / vec2<f32>(textureDimensions(shadowTexture, 0));
+    let clampRect = vec4<f32>(viewport.xy, (viewport.xy+viewport.zw));
+
+    // Percentage Closer Filtering
+    var visibility : f32 = 0.0;
+    for (var i : u32 = 0u; i < shadowSampleCount; i = i + 1u) {
+      visibility = visibility + textureSampleCompareLevel(
+        shadowTexture, shadowSampler,
+        clamp(viewportPos + shadowSampleOffsets[i] * texelSize, clampRect.xy, clampRect.zw),
+        shadowPos.z - 0.01);
     }
     return visibility / f32(shadowSampleCount);
   }

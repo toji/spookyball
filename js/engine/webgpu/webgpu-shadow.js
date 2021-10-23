@@ -1,7 +1,7 @@
 import { WebGPUSystem } from './webgpu-system.js';
 import { Stage } from '../core/stage.js';
 import { Transform } from '../core/transform.js';
-import { DirectionalLight, ShadowCastingLight } from '../core/light.js';
+import { DirectionalLight, PointLight, ShadowCastingLight } from '../core/light.js';
 import { TextureAtlasAllocator } from '../util/texture-atlas-allocator.js';
 import { ShadowFragmentSource,  } from './wgsl/shadow.js';
 import { WebGPUCameraBase } from './webgpu-camera.js';
@@ -9,19 +9,33 @@ import { WebGPUCameraBase } from './webgpu-camera.js';
 import { mat4, vec3, vec4 } from 'gl-matrix';
 
 const tmpVec3 = vec3.create();
+const lightPos = vec3.create();
+
+// Given in OpenGL Order:
+const pointShadowLookDirs = [
+  vec3.fromValues(1, 0, 0), // POSITIVE_X
+  vec3.fromValues(-1, 0, 0), // NEGATIVE_X
+  vec3.fromValues(0, 1, 0), // POSITIVE_Y
+  vec3.fromValues(0, -1, 0), // NEGATIVE_Y
+  vec3.fromValues(0, 0, 1), // POSITIVE_Z
+  vec3.fromValues(0, 0, -1), // NEGATIVE_Z
+];
+
+const pointShadowUpDirs = [
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 0, -1),
+  vec3.fromValues(0, 0, -1),
+  vec3.fromValues(0, 1, 0),
+  vec3.fromValues(0, 1, 0),
+];
 
 export class WebGPUShadowCamera extends WebGPUCameraBase {
   constructor(gpu, rect) {
     super(gpu)
     const device = gpu.device;
 
-    this.outputSize[0] = rect.width;
-    this.outputSize[1] = rect.height;
-
-    // Build a 1px border into the viewport so that we don't get blending artifacts.
-    this.viewport = [
-      rect.x+1, rect.y+1, rect.width-2, rect.height-2, 0.0, 1.0
-    ];
+    this.updateRect(rect);
 
     const dummyStorageBuffer = device.createBuffer({
       size: 4,
@@ -63,20 +77,29 @@ export class WebGPUShadowCamera extends WebGPUCameraBase {
       }],
     });
   }
+
+  updateRect(rect) {
+    this.outputSize[0] = rect.width;
+    this.outputSize[1] = rect.height;
+
+    // Build a 1px border into the viewport so that we don't get blending artifacts.
+    this.viewport = [
+      rect.x+1, rect.y+1, rect.width-2, rect.height-2, 0.0, 1.0
+    ];
+  }
 }
 
 export class WebGPUShadowSystem extends WebGPUSystem {
   stage = Stage.ShadowRender;
 
   #shadowPipelineCache = new WeakMap();
+  #shadowCameraCache = new WeakMap();
   frameCount = 0;
 
   init(gpu) {
     this.shadowCastingLightQuery = this.query(ShadowCastingLight);
     this.shadowCameraQuery = this.query(WebGPUShadowCamera);
     this.shadowUpdateFrequency = gpu.flags.shadowUpdateFrequency;
-
-    this.allocator = new TextureAtlasAllocator(gpu.shadowAtlasSize);
   }
 
   getOrCreateShadowPipeline(gpu, webgpuPipeline) {
@@ -111,6 +134,11 @@ export class WebGPUShadowSystem extends WebGPUSystem {
   }
 
   execute(delta, time, gpu) {
+    // This is silly, but for the moment it shouldn't give us too much trouble.
+    // TODO: Find a better way to track when texture atlas rects are no longer
+    // in use.
+    this.allocator = new TextureAtlasAllocator(gpu.shadowAtlasSize);
+
     this.frameCount++;
     if (this.frameCount % gpu.flags.shadowUpdateFrequency != 0) {
       // Skip shadow updates this frame.
@@ -120,24 +148,26 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     const lightShadowTable = new Int32Array(gpu.maxLightCount);
     lightShadowTable.fill(-1);
 
-    let nextShadowIndex = 1;
-
     const shadowProperties = new Float32Array(gpu.maxShadowCasters * 20);
 
-    let shadowIndex = 0;
+    const frameShadowCameras = [];
+
+    let shadowIndex = 1;
     this.shadowCastingLightQuery.forEach((entity, shadowCaster) => {
       const directionalLight = entity.get(DirectionalLight);
       if (directionalLight) {
-        const shadowIndex = 0; // Directional light is always shadow index 0
-        const propertOffset = shadowIndex * 20 * Float32Array.BYTES_PER_ELEMENT;
-
-        let shadowCamera = entity.get(WebGPUShadowCamera);
+        let shadowCamera = this.#shadowCameraCache.get(directionalLight);
+        const shadowMapSize = shadowCaster.textureSize * gpu.flags.shadowResolutionMultiplier;
         if (!shadowCamera) {
-          const shadowMapSize = shadowCaster.textureSize * gpu.flags.shadowResolutionMultiplier;
           const shadowAtlasRect = this.allocator.allocate(shadowMapSize);
           shadowCamera = new WebGPUShadowCamera(gpu, shadowAtlasRect);
-          entity.add(shadowCamera);
+          this.#shadowCameraCache.set(directionalLight, shadowCamera);
+        } else {
+          const shadowAtlasRect = this.allocator.allocate(shadowMapSize);
+          shadowCamera.updateRect(shadowAtlasRect);
         }
+
+        frameShadowCameras.push(shadowCamera);
 
         // Update the shadow camera's properties
         const transform = entity.get(Transform);
@@ -161,21 +191,80 @@ export class WebGPUShadowSystem extends WebGPUSystem {
         shadowCamera.zRange[1] = shadowCaster.zFar;
 
         gpu.device.queue.writeBuffer(shadowCamera.cameraBuffer, 0, shadowCamera.arrayBuffer);
-
-        const shadowViewport = new Float32Array(shadowProperties.buffer, propertOffset, 4);
-        const viewProjMat = new Float32Array(shadowProperties.buffer, propertOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 16);
+        
+        const propertyOffset = 0; // Directional light is always shadow index 0
+        const shadowViewport = new Float32Array(shadowProperties.buffer, propertyOffset, 4);
+        const viewProjMat = new Float32Array(shadowProperties.buffer, propertyOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 16);
 
         vec4.scale(shadowViewport, shadowCamera.viewport, 1.0/gpu.shadowAtlasSize);
         mat4.multiply(viewProjMat, shadowCamera.projection, shadowCamera.view);
 
-        lightShadowTable[0] = shadowIndex; // Directional light is always considered light 0
+        lightShadowTable[0] = 0; // Directional light is always considered light 0
       }
 
-      shadowIndex++;
+      const pointLight = entity.get(PointLight);
+      if (pointLight) {
+        // Point lights are made up of 6 shadow cameras, one pointing down each axis.
+        let shadowCameras = this.#shadowCameraCache.get(pointLight);
+
+        const shadowMapSize = shadowCaster.textureSize * gpu.flags.shadowResolutionMultiplier;
+        if (!shadowCameras) {
+          shadowCameras = [];
+          for (let i = 0; i < 6; ++i) {
+            const shadowAtlasRect = this.allocator.allocate(shadowMapSize);
+            shadowCameras.push(new WebGPUShadowCamera(gpu, shadowAtlasRect));
+          }
+          this.#shadowCameraCache.set(pointLight, shadowCameras);
+        } else {
+          for (let i = 0; i < 6; ++i) {
+            const shadowAtlasRect = this.allocator.allocate(shadowMapSize);
+            shadowCameras[i].updateRect(shadowAtlasRect);
+          }
+        }
+
+        const transform = entity.get(Transform);
+        if (transform) {
+          transform.getWorldPosition(lightPos);
+        } else {
+          vec3.set(lightPos, 0, 0, 0);
+        }
+
+        for (let i = 0; i < 6; ++i) {
+          const shadowCamera = shadowCameras[i];
+          const lookDir = pointShadowLookDirs[i];
+
+          vec3.copy(shadowCamera.position, lightPos);
+          vec3.add(tmpVec3, shadowCamera.position, lookDir);
+          mat4.lookAt(shadowCamera.view, shadowCamera.position, tmpVec3, pointShadowUpDirs[i]);
+
+          // TODO: Can the far plane at least be derived from the light range?
+          mat4.perspectiveZO(shadowCamera.projection, Math.PI * 0.5, 1, shadowCaster.zNear, shadowCaster.zFar);
+          mat4.invert(shadowCamera.inverseProjection, shadowCamera.projection);
+
+          shadowCamera.time[0] = time;
+          shadowCamera.zRange[0] = shadowCaster.zNear;
+          shadowCamera.zRange[1] = shadowCaster.zFar;
+
+          gpu.device.queue.writeBuffer(shadowCamera.cameraBuffer, 0, shadowCamera.arrayBuffer);
+
+          const propertyOffset = (shadowIndex+i) * 20 * Float32Array.BYTES_PER_ELEMENT;
+          const shadowViewport = new Float32Array(shadowProperties.buffer, propertyOffset, 4);
+          const viewProjMat = new Float32Array(shadowProperties.buffer, propertyOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 16);
+
+          vec4.scale(shadowViewport, shadowCamera.viewport, 1.0/gpu.shadowAtlasSize);
+          mat4.multiply(viewProjMat, shadowCamera.projection, shadowCamera.view);
+        }
+
+        frameShadowCameras.push(...shadowCameras);
+
+        lightShadowTable[pointLight.lightIndex+1] = shadowIndex;
+        shadowIndex+=6;
+      }
     });
 
+    if (!frameShadowCameras.length) { return; }
     
-    // TODO: Do point/spot lights as well
+    // TODO: Do spot lights as well
 
     gpu.device.queue.writeBuffer(gpu.lightShadowTableBuffer, 0, lightShadowTable);
     gpu.device.queue.writeBuffer(gpu.shadowPropertiesBuffer, 0, shadowProperties);
@@ -194,63 +283,64 @@ export class WebGPUShadowSystem extends WebGPUSystem {
       }
     });
 
-    this.shadowCameraQuery.forEach((entity, shadowCamera) => {
-      // Render a shadow pass
+    const instanceBuffer = gpu.renderBatch.instanceBuffer;
 
-      // TODO: Set viewport into shadow texture
-      passEncoder.setViewport(...shadowCamera.viewport);
+    // Loop through all the renderable entities and store them by pipeline.
+    for (const pipeline of gpu.renderBatch.sortedPipelines) {
+      if (!pipeline.layout) { continue; }
 
-      passEncoder.setBindGroup(0, shadowCamera.bindGroup);
+      const shadowPipeline = this.getOrCreateShadowPipeline(gpu, pipeline);
 
-      const instanceBuffer = gpu.renderBatch.instanceBuffer;
+      passEncoder.setPipeline(shadowPipeline);
 
-      // Loop through all the renderable entities and store them by pipeline.
-      for (const pipeline of gpu.renderBatch.sortedPipelines) {
-        if (!pipeline.layout) { continue; }
+      const geometryList = gpu.renderBatch.pipelineGeometries.get(pipeline);
+      for (const [geometry, materialList] of geometryList) {
 
-        const shadowPipeline = this.getOrCreateShadowPipeline(gpu, pipeline);
+        for (const vb of geometry.vertexBuffers) {
+          passEncoder.setVertexBuffer(vb.slot, vb.buffer.gpuBuffer, vb.offset);
+        }
+        const ib = geometry.indexBuffer;
+        if (ib) {
+          passEncoder.setIndexBuffer(ib.buffer.gpuBuffer, ib.format, ib.offset);
+        }
 
-        passEncoder.setPipeline(shadowPipeline);
+        for (const [material, instances] of materialList) {
+          if (material) {
+            if (!material.castsShadow) { continue; }
 
-        const geometryList = gpu.renderBatch.pipelineGeometries.get(pipeline);
-        for (const [geometry, materialList] of geometryList) {
+            if (material.firstBindGroupIndex == 0) { continue; }
 
-          for (const vb of geometry.vertexBuffers) {
-            passEncoder.setVertexBuffer(vb.slot, vb.buffer.gpuBuffer, vb.offset);
-          }
-          const ib = geometry.indexBuffer;
-          if (ib) {
-            passEncoder.setIndexBuffer(ib.buffer.gpuBuffer, ib.format, ib.offset);
-          }
-
-          for (const [material, instances] of materialList) {
-            if (material) {
-              if (!material.castsShadow) { continue; }
-
-              let i = material.firstBindGroupIndex;
-              for (const bindGroup of material.bindGroups) {
-                passEncoder.setBindGroup(i++, bindGroup);
-              }
+            let i = material.firstBindGroupIndex;
+            for (const bindGroup of material.bindGroups) {
+              passEncoder.setBindGroup(i++, bindGroup);
             }
+          }
 
-            if (pipeline.instanceSlot >= 0) {
-              passEncoder.setVertexBuffer(pipeline.instanceSlot, instanceBuffer, instances.bufferOffset);
-            }
+          if (pipeline.instanceSlot >= 0) {
+            passEncoder.setVertexBuffer(pipeline.instanceSlot, instanceBuffer, instances.bufferOffset);
+          }
+
+          // Because we're rendering all the shadows into a single atlas it's more efficient to
+          // bind then render once for each light's viewport.
+          for (const shadowCamera of frameShadowCameras) {
+            // Render a shadow pass
+            passEncoder.setViewport(...shadowCamera.viewport);
+            passEncoder.setBindGroup(0, shadowCamera.bindGroup);
 
             if (ib) {
               passEncoder.drawIndexed(geometry.drawCount, instances.instanceCount);
             } else {
               passEncoder.draw(geometry.drawCount, instances.instanceCount);
             }
-
-            // Restore the camera binding if needed
-            if (material?.firstBindGroupIndex == 0) {
-              passEncoder.setBindGroup(0, camera.bindGroup);
-            }
           }
+
+          // Restore the camera binding if needed
+          /*if (material?.firstBindGroupIndex == 0) {
+            passEncoder.setBindGroup(0, camera.bindGroup);
+          }*/
         }
       }
-    });
+    }
 
     passEncoder.endPass();
 
