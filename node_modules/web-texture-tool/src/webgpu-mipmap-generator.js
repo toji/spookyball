@@ -13,9 +13,8 @@ export class WebGPUMipmapGenerator {
       if (!this.mipmapVertexShaderModule || !this.mipmapFragmentShaderModule) {
         this.mipmapShaderModule = this.device.createShaderModule({
           code: `
-            var<private> pos : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
-              vec2<f32>(-1.0, 1.0), vec2<f32>(1.0, 1.0),
-              vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, -1.0));
+            var<private> pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+              vec2<f32>(-1.0, -1.0), vec2<f32>(-1.0, 3.0), vec2<f32>(3.0, -1.0));
 
             struct VertexOutput {
               [[builtin(position)]] position : vec4<f32>;
@@ -50,11 +49,7 @@ export class WebGPUMipmapGenerator {
           module: this.mipmapShaderModule,
           entryPoint: 'fragmentMain',
           targets: [{format}],
-        },
-        primitive: {
-          topology: 'triangle-strip',
-          stripIndexFormat: 'uint32',
-        },
+        }
       });
       this.pipelines[format] = pipeline;
     }
@@ -141,7 +136,7 @@ export class WebGPUMipmapGenerator {
 
         passEncoder.setPipeline(pipeline);
         passEncoder.setBindGroup(0, bindGroup);
-        passEncoder.draw(4, 1, 0, 0);
+        passEncoder.draw(3, 1, 0, 0);
         passEncoder.endPass();
 
         srcView = dstView;

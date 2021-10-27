@@ -33,10 +33,6 @@ export class WebGPUTextureDebugSystem extends WebGPUSystem {
         targets: [{
           format: gpu.renderTargets.format,
         }],
-      },
-      primitive: {
-        topology: 'triangle-strip',
-        stripIndexFormat: 'uint32'
       }
     });
 
@@ -58,10 +54,6 @@ export class WebGPUTextureDebugSystem extends WebGPUSystem {
         targets: [{
           format: gpu.renderTargets.format,
         }],
-      },
-      primitive: {
-        topology: 'triangle-strip',
-        stripIndexFormat: 'uint32'
       }
     });
   }
@@ -101,7 +93,7 @@ export class WebGPUTextureDebugSystem extends WebGPUSystem {
     this.query(WebGPUDebugTextureView).forEach((entity, textureView) => {
       passEncoder.setPipeline(textureView.isShadow ? this.shadowPipeline : this.pipeline);
       passEncoder.setBindGroup(0, textureView.bindGroup);
-      passEncoder.draw(4);
+      passEncoder.draw(3);
     })
 
     passEncoder.endPass();
