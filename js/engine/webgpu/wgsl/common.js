@@ -152,9 +152,8 @@ export const ColorConversions = wgsl`
 `;
 
 export const FullscreenTexturedQuadVertexSource = `
-  var<private> pos : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
-    vec2<f32>(-1.0, 1.0), vec2<f32>(1.0, 1.0), vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, -1.0)
-  );
+  var<private> pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
+    vec2<f32>(-1.0, -1.0), vec2<f32>(-1.0, 3.0), vec2<f32>(3.0, -1.0));
 
   struct VertexInput {
     [[builtin(vertex_index)]] vertexIndex : u32;

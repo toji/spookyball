@@ -26,10 +26,6 @@ export class WebGPUBloomSystem extends WebGPUSystem {
         targets: [{
           format: gpu.renderTargets.format,
         }],
-      },
-      primitive: {
-        topology: 'triangle-strip',
-        stripIndexFormat: 'uint32'
       }
     });
 
@@ -51,10 +47,6 @@ export class WebGPUBloomSystem extends WebGPUSystem {
         targets: [{
           format: gpu.renderTargets.format,
         }],
-      },
-      primitive: {
-        topology: 'triangle-strip',
-        stripIndexFormat: 'uint32'
       }
     });
 
@@ -87,10 +79,6 @@ export class WebGPUBloomSystem extends WebGPUSystem {
             }
           }
         }],
-      },
-      primitive: {
-        topology: 'triangle-strip',
-        stripIndexFormat: 'uint32'
       }
     });
 
@@ -207,7 +195,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
 
     passEncoder.setPipeline(this.blurHorizonalPipeline);
     passEncoder.setBindGroup(0, this.pass0BindGroup);
-    passEncoder.draw(4);
+    passEncoder.draw(3);
     passEncoder.endPass();
 
     // 2nd pass (Vertical blur)
@@ -221,7 +209,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
 
     passEncoder.setPipeline(this.blurVerticalPipeline);
     passEncoder.setBindGroup(0, this.pass1BindGroups[pingPongIndex]);
-    passEncoder.draw(4);
+    passEncoder.draw(3);
     passEncoder.endPass();
 
     // Blend pass
@@ -235,7 +223,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
 
     passEncoder.setPipeline(this.blendPipeline);
     passEncoder.setBindGroup(0, this.blendPassBindGroups[pingPongIndex]);
-    passEncoder.draw(4);
+    passEncoder.draw(3);
     passEncoder.endPass();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
