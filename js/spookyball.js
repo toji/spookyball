@@ -30,8 +30,12 @@ import { FlyingControls, FlyingControlsSystem } from './engine/controls/flying-c
 const debugMode = QueryArgs.getBool('debug', false);
 
 function getQuality() {
+  const ULTRA_QUALITY = {
+    ballShadows: true,
+    maxBallShadows: 2,
+  };
+
   const HIGH_QUALITY = {
-    ballShadows: true
   }; // Defaults
 
   const MEDIUM_QUALITY = {
@@ -59,6 +63,8 @@ function getQuality() {
   const qualitySetting = QueryArgs.getString('quality');
 
   switch (qualitySetting) {
+    case 'ultra':
+      return ULTRA_QUALITY;
     case 'high':
       return HIGH_QUALITY;
     case 'medium':
