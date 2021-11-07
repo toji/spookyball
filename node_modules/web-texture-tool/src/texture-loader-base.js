@@ -383,6 +383,25 @@ export class TextureLoaderBase {
   }
 
   /**
+   * Sets whether or not texStorage functions should be used.
+   * Only affects the behavior of WebGL 2.0 loaders
+   *
+   * @param {boolean} value - `true` if texStorage functions should be allowed.
+   */
+   set allowTexStorage(value) {
+    this[CLIENT].allowTexStorage = !!value;
+  }
+
+  /**
+   * Returns whether or not texStorage functions should be used.
+   *
+   * @returns {boolean} `true` if texStorage functions should be allowed.
+   */
+  get allowTexStorage() {
+    return this[CLIENT].allowTexStorage;
+  }
+
+  /**
    * Destroys the texture tool and stops any in-progress texture loads that have been started.
    *
    * @returns {void}

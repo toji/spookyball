@@ -43,6 +43,7 @@
       const settings = {
         colorSpace: 'linear',
         mipmaps: true,
+        useTexStorage: true,
         compressedFormats: false,
         pause: false,
       };
@@ -56,6 +57,11 @@
       gui.add(settings, "mipmaps").onChange(() => {
         if (renderer) {
           renderer.mipmaps = settings.mipmaps;
+        }
+      });
+      gui.add(settings, "useTexStorage").onChange(() => {
+        if (renderer) {
+          renderer.loader.allowTexStorage = settings.useTexStorage;
         }
       });
 
@@ -180,7 +186,7 @@
         }
 
         renderer = null;
-        let newRenderer = new WebGLRenderer();
+        let newRenderer = new WebGLRenderer(true);
         newRenderer.initialize().then(() => {
           for (let tile of tiles) {
             newRenderer.initializeTile(tile);
@@ -188,7 +194,7 @@
 
           renderer = newRenderer;
           renderer.mipmaps = settings.mipmaps;
-          renderer.textureTool.allowCompressedFormats = settings.compressedFormats;
+          renderer.loader.allowCompressedFormats = settings.compressedFormats;
 
           const canvas = newRenderer.canvas;
           document.body.appendChild(canvas);
