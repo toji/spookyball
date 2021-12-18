@@ -3,7 +3,7 @@ import { AttributeLocation } from '../../core/mesh.js';
 
 export const CAMERA_BUFFER_SIZE = 56 * Float32Array.BYTES_PER_ELEMENT;
 export function CameraStruct(group = 0, binding = 0) { return `
-  [[block]] struct Camera {
+  struct Camera {
     projection : mat4x4<f32>;
     inverseProjection : mat4x4<f32>;
     view : mat4x4<f32>;
@@ -26,7 +26,7 @@ export function LightStruct(group = 0, binding = 1) { return `
     intensity : f32;
   };
 
-  [[block]] struct GlobalLights {
+  struct GlobalLights {
     ambient : vec3<f32>;
     dirColor : vec3<f32>;
     dirIntensity : f32;
@@ -39,7 +39,7 @@ export function LightStruct(group = 0, binding = 1) { return `
 }
 
 export function SkinStructs(group = 1) { return `
-  [[block]] struct Joints {
+  struct Joints {
     matrices : [[stride(64)]] array<mat4x4<f32>>;
   };
   [[group(${group}), binding(0)]] var<storage, read> joint : Joints;
@@ -110,7 +110,7 @@ export function DefaultVertexOutput(layout) { return wgsl`
 
 export const GetInstanceMatrix = `
   fn getInstanceMatrix(input : VertexInput) -> mat4x4<f32> {
-    return mat4x4<f32>(
+    return mat4x4(
       input.instance0,
       input.instance1,
       input.instance2,
@@ -127,33 +127,33 @@ export const ColorConversions = wgsl`
   let GAMMA = 2.2;
   fn linearTosRGB(linear : vec3<f32>) -> vec3<f32> {
     let INV_GAMMA = 1.0 / GAMMA;
-    return pow(linear, vec3<f32>(INV_GAMMA, INV_GAMMA, INV_GAMMA));
+    return pow(linear, vec3(INV_GAMMA));
   }
 
   fn sRGBToLinear(srgb : vec3<f32>) -> vec3<f32> {
-    return pow(srgb, vec3<f32>(GAMMA, GAMMA, GAMMA));
+    return pow(srgb, vec3(GAMMA));
   }
 #else
   // linear <-> sRGB conversions
   fn linearTosRGB(linear : vec3<f32>) -> vec3<f32> {
-    if (all(linear <= vec3<f32>(0.0031308, 0.0031308, 0.0031308))) {
+    if (all(linear <= vec3(0.0031308))) {
       return linear * 12.92;
     }
-    return (pow(abs(linear), vec3<f32>(1.0/2.4, 1.0/2.4, 1.0/2.4)) * 1.055) - vec3<f32>(0.055, 0.055, 0.055);
+    return (pow(abs(linear), vec3(1.0/2.4)) * 1.055) - vec3(0.055);
   }
 
   fn sRGBToLinear(srgb : vec3<f32>) -> vec3<f32> {
-    if (all(srgb <= vec3<f32>(0.04045, 0.04045, 0.04045))) {
-      return srgb / vec3<f32>(12.92, 12.92, 12.92);
+    if (all(srgb <= vec3(0.04045))) {
+      return srgb / vec3(12.92);
     }
-    return pow((srgb + vec3<f32>(0.055, 0.055, 0.055)) / vec3<f32>(1.055, 1.055, 1.055), vec3<f32>(2.4, 2.4, 2.4));
+    return pow((srgb + vec3(0.055)) / vec3(1.055), vec3(2.4));
   }
 #endif
 `;
 
 export const FullscreenTexturedQuadVertexSource = `
   var<private> pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
-    vec2<f32>(-1.0, -1.0), vec2<f32>(-1.0, 3.0), vec2<f32>(3.0, -1.0));
+    vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 
   struct VertexInput {
     [[builtin(vertex_index)]] vertexIndex : u32;
@@ -168,7 +168,7 @@ export const FullscreenTexturedQuadVertexSource = `
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 
-    output.position = vec4<f32>(pos[input.vertexIndex], 1.0, 1.0);
+    output.position = vec4(pos[input.vertexIndex], 1.0, 1.0);
     output.texCoord = pos[input.vertexIndex] * 0.5 + 0.5;
     output.texCoord.y = output.texCoord.y * -1.0;
 
@@ -202,6 +202,6 @@ struct FragmentInput {
 [[stage(fragment)]]
 fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
   let shadowDepth = textureSample(shadowTexture, shadowSampler, input.texCoord);
-  return vec4<f32>(shadowDepth, shadowDepth, shadowDepth, 1.0);
+  return vec4(shadowDepth, shadowDepth, shadowDepth, 1.0);
 }
 `;

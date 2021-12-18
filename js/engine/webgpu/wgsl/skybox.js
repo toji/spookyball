@@ -18,10 +18,9 @@ export const SkyboxVertexSource = `
     var output : VertexOutput;
     output.texCoord = input.position.xyz;
 
-    //let instanceMatrix = instance.matrix[input.instanceIndex];
-    var modelView : mat4x4<f32> = camera.view; // * instanceMatrix;
+    var modelView = camera.view;
     // Drop the translation portion of the modelView matrix
-    modelView[3] = vec4<f32>(0.0, 0.0, 0.0, modelView[3].w);
+    modelView[3] = vec4(0.0, 0.0, 0.0, modelView[3].w);
     output.position = camera.projection * modelView * input.position;
     // Returning the W component for both Z and W forces the geometry depth to
     // the far plane. When combined with a depth func of "less-equal" this makes
@@ -43,6 +42,6 @@ export const SkyboxFragmentSource = `
   [[stage(fragment)]]
   fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
     let color = textureSample(skyboxTexture, defaultSampler, input.texCoord);
-    return vec4<f32>(linearTosRGB(color.rgb), 1.0);
+    return vec4(linearTosRGB(color.rgb), 1.0);
   }
 `;

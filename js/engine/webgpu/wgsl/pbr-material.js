@@ -6,7 +6,7 @@ import { ShadowFunctions } from './shadow.js';
 
 export const MATERIAL_BUFFER_SIZE = 11 * Float32Array.BYTES_PER_ELEMENT;
 export function MaterialStruct(group = 1) { return `
-  [[block]] struct Material {
+  struct Material {
     baseColorFactor : vec4<f32>;
     emissiveFactor : vec3<f32>;
     occlusionStrength : f32;
@@ -49,9 +49,9 @@ function PBRSurfaceInfo(layout) { return wgsl`
     surface.v = normalize(input.view);
 
 #if ${layout.locationsUsed.includes(AttributeLocation.tangent)}
-    let tbn = mat3x3<f32>(input.tangent, input.bitangent, input.normal);
+    let tbn = mat3x3(input.tangent, input.bitangent, input.normal);
     let N = textureSample(normalTexture, normalSampler, input.texcoord).rgb;
-    surface.normal = normalize(tbn * (2.0 * N - vec3<f32>(1.0, 1.0, 1.0)));
+    surface.normal = normalize(tbn * (2.0 * N - vec3(1.0)));
 #else
     surface.normal = normalize(input.normal);
 #endif
@@ -68,8 +68,8 @@ function PBRSurfaceInfo(layout) { return wgsl`
     surface.metallic = material.metallicRoughnessFactor.x * metallicRoughnessMap.b;
     surface.roughness = material.metallicRoughnessFactor.y * metallicRoughnessMap.g;
 
-    let dielectricSpec = vec3<f32>(0.04, 0.04, 0.04);
-    surface.f0 = mix(dielectricSpec, surface.albedo, vec3<f32>(surface.metallic, surface.metallic, surface.metallic));
+    let dielectricSpec = vec3(0.04);
+    surface.f0 = mix(dielectricSpec, surface.albedo, vec3(surface.metallic));
 
     let occlusionMap = textureSample(occlusionTexture, occlusionSampler, input.texcoord);
     surface.ao = material.occlusionStrength * occlusionMap.r;
@@ -105,7 +105,7 @@ struct PuctualLight {
 };
 
 fn FresnelSchlick(cosTheta : f32, F0 : vec3<f32>) -> vec3<f32> {
-  return F0 + (vec3<f32>(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
+  return F0 + (vec3(1.0) - F0) * pow(1.0 - cosTheta, 5.0);
 }
 
 fn DistributionGGX(N : vec3<f32>, H : vec3<f32>, roughness : f32) -> f32 {
@@ -166,16 +166,16 @@ fn lightRadiance(light : PuctualLight, surface : SurfaceInfo) -> vec3<f32> {
 #endif
   let F = FresnelSchlick(max(dot(H, surface.v), 0.0), surface.f0);
 
-  let kD = (vec3<f32>(1.0) - F) * (1.0 - surface.metallic);
+  let kD = (vec3(1.0) - F) * (1.0 - surface.metallic);
   let NdotL = max(dot(surface.normal, L), 0.0);
 
   let numerator = NDF * G * F;
   let denominator = max(4.0 * max(dot(surface.normal, surface.v), 0.0) * NdotL, 0.001);
-  let specular = numerator / vec3<f32>(denominator);
+  let specular = numerator / vec3(denominator);
 
   // add to outgoing radiance Lo
   let radiance = light.color * light.intensity * lightAttenuation(light);
-  return (kD * surface.albedo / vec3<f32>(PI) + specular) * radiance * NdotL;
+  return (kD * surface.albedo / vec3(PI) + specular) * radiance * NdotL;
 }`;
 }
 
@@ -205,7 +205,7 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
     let surface = GetSurfaceInfo(input);
 
     // reflectance equation
-    var Lo = vec3<f32>(0.0, 0.0, 0.0);
+    var Lo = vec3(0.0, 0.0, 0.0);
 
     // Process the directional light if one is present
     if (globalLights.dirIntensity > 0.0) {
@@ -254,9 +254,9 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
     let color = linearTosRGB(Lo + ambient + surface.emissive);
 
     var out : FragmentOutput;
-    out.color = vec4<f32>(color, surface.baseColor.a);
+    out.color = vec4(color, surface.baseColor.a);
 #if ${flags.bloomEnabled}
-    out.emissive = vec4<f32>(surface.emissive, surface.baseColor.a);
+    out.emissive = vec4(surface.emissive, surface.baseColor.a);
 #endif
     return out;
   }`;
