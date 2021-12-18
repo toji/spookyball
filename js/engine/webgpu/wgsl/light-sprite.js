@@ -2,7 +2,7 @@ import { CameraStruct, LightStruct, ColorConversions } from './common.js';
 
 export const LightSpriteVertexSource = `
   var<private> pos : array<vec2<f32>, 4> = array<vec2<f32>, 4>(
-    vec2<f32>(-1.0, 1.0), vec2<f32>(1.0, 1.0), vec2<f32>(-1.0, -1.0), vec2<f32>(1.0, -1.0)
+    vec2(-1.0, 1.0), vec2(1.0, 1.0), vec2(-1.0, -1.0), vec2(1.0, -1.0)
   );
 
   ${CameraStruct(0, 0)}
@@ -27,11 +27,11 @@ export const LightSpriteVertexSource = `
 
     output.localPos = pos[input.vertexIndex];
     output.color = (*light).color * (*light).intensity;
-    let worldPos = vec3<f32>(output.localPos, 0.0) * (*light).range * 0.025;
+    let worldPos = vec3(output.localPos, 0.0) * (*light).range * 0.025;
 
     // Generate a billboarded model view matrix
     var bbModelViewMatrix : mat4x4<f32>;
-    bbModelViewMatrix[3] = vec4<f32>((*light).position, 1.0);
+    bbModelViewMatrix[3] = vec4((*light).position, 1.0);
     bbModelViewMatrix = camera.view * bbModelViewMatrix;
     bbModelViewMatrix[0][0] = 1.0;
     bbModelViewMatrix[0][1] = 0.0;
@@ -45,7 +45,7 @@ export const LightSpriteVertexSource = `
     bbModelViewMatrix[2][1] = 0.0;
     bbModelViewMatrix[2][2] = 1.0;
 
-    output.position = camera.projection * bbModelViewMatrix * vec4<f32>(worldPos, 1.0);
+    output.position = camera.projection * bbModelViewMatrix * vec4(worldPos, 1.0);
     return output;
   }
 `;
@@ -62,6 +62,6 @@ export const LightSpriteFragmentSource = `
   fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
     let distToCenter = length(input.localPos);
     let fade = (1.0 - distToCenter) * (1.0 / (distToCenter * distToCenter));
-    return vec4<f32>(linearTosRGB(input.color * fade), fade);
+    return vec4(linearTosRGB(input.color * fade), fade);
   }
 `;

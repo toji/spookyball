@@ -3,7 +3,7 @@ import { ColorConversions, DefaultVertexOutput } from './common.js';
 
 export const MATERIAL_BUFFER_SIZE = 5 * Float32Array.BYTES_PER_ELEMENT;
 export function MaterialStruct(group = 1) { return `
-  [[block]] struct Material {
+  struct Material {
     baseColorFactor : vec4<f32>;
     alphaCutoff : f32;
   };
@@ -26,6 +26,6 @@ export function UnlitFragmentSource(layout) { return `
       discard;
     }
     let baseColor = input.color * material.baseColorFactor * baseColorMap;
-    return vec4<f32>(linearTosRGB(baseColor.rgb), baseColor.a);
+    return vec4(linearTosRGB(baseColor.rgb), baseColor.a);
   }`;
 };
