@@ -7,6 +7,7 @@ import { LightBuffer } from '../core/light.js';
 
 import { CAMERA_BUFFER_SIZE } from './wgsl/common.js';
 import { CLUSTER_BOUNDS_SIZE, CLUSTER_LIGHTS_SIZE } from './wgsl/clustered-light.js';
+import { Stage } from '../core/stage.js';
 
 // Also used by things like shadow-casting lights.
 export class WebGPUCameraBase {
@@ -104,6 +105,8 @@ export class WebGPUCamera extends WebGPUCameraBase {
 }
 
 export class WebGPUCameraSystem extends WebGPUSystem {
+  stage = Stage.PreRender;
+
   execute(delta, time, gpu) {
     // If a Camera does not have an associated WebGPUCamera add one.
     this.query(Camera).not(WebGPUCamera).forEach((entity) => {

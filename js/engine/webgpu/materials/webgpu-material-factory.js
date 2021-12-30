@@ -21,6 +21,10 @@ export class WebGPUMaterialPipeline {
     this.instanceSlot = options?.instanceSlot ?? -1;
     this.layout = options?.layout ?? null;
     this.skinned = options?.skinned ?? false;
+    this.depthWrite = options?.material?.depthWrite ?? true;
+    this.depthCompare = options?.material?.depthCompare ?? 'less';
+    this.transparent = options?.material?.transparent ?? false;
+    this.doubleSided = options?.material?.doubleSided ?? true;
   }
 }
 
@@ -55,7 +59,7 @@ const INSTANCE_BUFFER_LAYOUT = {
     offset: 48,
     shaderLocation: AttributeLocation.maxAttributeLocation+3,
   },
-  
+
   // Instance Color
   {
     format: 'float32x4',
@@ -69,6 +73,7 @@ const materialFactories = new Map();
 export class WebGPUMaterialFactory {
   renderOrder = RenderOrder.Default;
   writesEmissive = false;
+  writesNormal = false;
 
   #pipelineCache = new Map();
   #materialCache = new Map();
@@ -106,7 +111,8 @@ export class WebGPUMaterialFactory {
         renderOrder: material.transparent ? RenderOrder.Transparent : this.renderOrder,
         instanceSlot: geometryLayout.buffers.length,
         layout: geometryLayout,
-        skinned
+        skinned,
+        material,
       });
       this.#pipelineCache.set(key, gpuPipeline);
     }
@@ -203,8 +209,8 @@ export class WebGPUMaterialFactory {
       },
       depthStencil: {
         format: gpu.renderTargets.depthFormat,
-        depthWriteEnabled: material.depthWrite,
-        depthCompare: material.depthCompare,
+        depthWriteEnabled: material.transparent ? material.depthWrite : false,
+        depthCompare: material.transparent ? material.depthCompare : 'equal',
       },
       multisample: { count: gpu.renderTargets.sampleCount, },
     });

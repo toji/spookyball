@@ -15,6 +15,7 @@ function isFullyRough(material) {
 
 class WebGPUPBRMaterial extends WebGPUMaterialFactory {
   writesEmissive = true;
+  writesNormal = true;
 
   init(gpu) {
     this.bindGroupLayout = gpu.device.createBindGroupLayout({

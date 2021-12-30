@@ -106,10 +106,10 @@ export class WebGPURenderer extends Renderer {
     this.depthAttachment = {
       // view is acquired and set in onResize.
       view: undefined,
-      depthLoadValue: 1.0,
-      depthStoreOp: 'discard',
-      stencilLoadValue: 0,
-      stencilStoreOp: 'discard',
+      depthLoadValue: 'load',
+      depthStoreOp: 'store',
+      stencilLoadValue: 'load',
+      stencilStoreOp: 'store',
     };
 
     this.renderPassDescriptor = {
@@ -145,6 +145,11 @@ export class WebGPURenderer extends Renderer {
     // The defautls are simply to set the depth and MSAA texture;
     if (this.renderTargets.sampleCount > 1) {
       this.colorAttachment.view = this.renderTargets.msaaColorTexture.createView();
+      if (this.renderTargets.depthFormat) {
+        this.depthAttachment.view = this.renderTargets.msaaDepthTexture.createView();
+      }
+    } else if (this.renderTargets.depthFormat) {
+      this.depthAttachment.view = this.renderTargets.depthTexture.createView();
     }
 
     if (this.flags.bloomEnabled) {
@@ -154,10 +159,6 @@ export class WebGPURenderer extends Renderer {
       } else {
         this.emissiveAttachment.view = this.renderTargets.emissiveTexture.createView();
       }
-    }
-
-    if (this.renderTargets.depthFormat) {
-      this.depthAttachment.view = this.renderTargets.depthTexture.createView();
     }
   }
 
@@ -173,6 +174,7 @@ export class WebGPURenderer extends Renderer {
       this.colorAttachment.view = outputTexture.createView();
     }
 
+    // Primary color pass
     const passEncoder = commandEncoder.beginRenderPass(this.renderPassDescriptor);
 
     passEncoder.setBindGroup(0, camera.bindGroup);

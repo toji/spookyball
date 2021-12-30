@@ -170,7 +170,7 @@ export const FullscreenTexturedQuadVertexSource = `
 
     output.position = vec4(pos[input.vertexIndex], 1.0, 1.0);
     output.texCoord = pos[input.vertexIndex] * 0.5 + 0.5;
-    output.texCoord.y = output.texCoord.y * -1.0;
+    output.texCoord.y = output.texCoord.y * -1.0 + 1.0;
 
     return output;
   }

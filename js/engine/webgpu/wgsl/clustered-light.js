@@ -83,12 +83,12 @@ export const ClusterBoundsSource = `
 
   fn clipToView(clip : vec4<f32>) -> vec4<f32> {
     let view = camera.inverseProjection * clip;
-    return view / vec4(view.w, view.w, view.w, view.w);
+    return view / view.w;
   }
 
   fn screen2View(screen : vec4<f32>) -> vec4<f32> {
     let texCoord = screen.xy / camera.outputSize.xy;
-    let clip = vec4(vec2(texCoord.x, 1.0 - texCoord.y) * 2.0 - vec2(1.0, 1.0), screen.z, screen.w);
+    let clip = vec4(vec2(texCoord.x, 1.0 - texCoord.y) * 2.0 - vec2(1.0), screen.z, screen.w);
     return clipToView(clip);
   }
 

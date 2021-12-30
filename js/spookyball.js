@@ -25,6 +25,7 @@ import Stats from 'stats.js';
 
 import { WebGPUTextureDebugSystem, WebGPUDebugTextureView } from './engine/webgpu/webgpu-texture-debug.js';
 import { WebGPUBloomSystem } from './engine/webgpu/webgpu-bloom.js';
+import { WebGPUSSAOSystem } from './engine/webgpu/webgpu-ssao.js';
 import { FlyingControls, FlyingControlsSystem } from './engine/controls/flying-controls.js';
 
 const debugMode = QueryArgs.getBool('debug', false);
@@ -49,6 +50,7 @@ function getQuality() {
     sampleCount: 1,
     resolutionMultiplier: 0.5,
     bloomEnabled: false,
+    ssaoEnabled: false,
   };
 
   const POTATO_QUALITY = {
@@ -58,6 +60,7 @@ function getQuality() {
     sampleCount: 1,
     resolutionMultiplier: 0.5,
     bloomEnabled: false,
+    ssaoEnabled: false,
   };
 
   const qualitySetting = QueryArgs.getString('quality');
@@ -90,6 +93,7 @@ const appSettings = {
   showJoints: false,
   moonlight: true,
   enableBloom: true,
+  enableSSAO: true,
   renderTarget: 'default',
 };
 
@@ -174,6 +178,16 @@ if (debugMode) {
     });
   }
 
+  if (rendererFlags.ssaoEnabled !== false) {
+    gui.add(appSettings, 'enableSSAO').onChange(() => {
+      if (appSettings.enableSSAO) {
+        world.registerRenderSystem(WebGPUSSAOSystem);
+      } else {
+        world.removeSystem(WebGPUSSAOSystem);
+      }
+    });
+  }
+
   gui.add(appSettings, 'moonlight').onChange(() => {
     if (appSettings.moonlight) {
       moonlight.intensity = 1.8;
@@ -184,10 +198,13 @@ if (debugMode) {
 
   gui.add(appSettings, 'renderTarget', {
     'Default': 'default',
+    'Depth': 'depth',
+    'Normal': 'normal',
     'Shadow': 'shadow',
     'Emissive': 'emissive',
     'Bloom Pass 0': 'bloom0',
     'Bloom Pass 1': 'bloom1',
+    'SSAO': 'ssao',
   }).onChange(() => {
     world.query(WebGPUDebugTextureView).forEach((entity) => {
       entity.destroy();
@@ -197,14 +214,23 @@ if (debugMode) {
       case 'shadow':
         world.create(new WebGPUDebugTextureView(renderer.shadowDepthTexture.createView(), true));
         break;
+      case 'depth':
+        world.create(new WebGPUDebugTextureView(renderer.renderTargets.depthTexture.createView(), true));
+        break;
+      case 'normal':
+        world.create(new WebGPUDebugTextureView(renderer.renderTargets.normalTexture.createView()));
+        break;
       case 'emissive':
         world.create(new WebGPUDebugTextureView(renderer.renderTargets.emissiveTexture.createView()));
         break;
       case 'bloom0':
-        world.create(new WebGPUDebugTextureView(renderer.renderTargets.bloomTextures[0].createView()));
+        world.create(new WebGPUDebugTextureView(world.getSystem(WebGPUBloomSystem).bloomTextures[0].createView()));
         break;
       case 'bloom1':
-        world.create(new WebGPUDebugTextureView(renderer.renderTargets.bloomTextures[1].createView()));
+        world.create(new WebGPUDebugTextureView(world.getSystem(WebGPUBloomSystem).bloomTextures[1].createView()));
+        break;
+      case 'ssao':
+        world.create(new WebGPUDebugTextureView(world.getSystem(WebGPUSSAOSystem).ssaoTexture.createView()));
         break;
       default:
         world.removeSystem(WebGPUTextureDebugSystem);
@@ -236,7 +262,7 @@ world.registerRenderSystem(PlayerSystem, gltfLoader);
 
 const projection = new Camera();
 projection.zNear = 1;
-projection.zFar = 1024;
+projection.zFar = 128;
 
 const cameraOrientation = quat.create();
 quat.rotateX(cameraOrientation, cameraOrientation, Math.PI * -0.42);

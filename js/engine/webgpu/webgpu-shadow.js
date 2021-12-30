@@ -90,7 +90,7 @@ export class WebGPUShadowCamera extends WebGPUCameraBase {
 }
 
 export class WebGPUShadowSystem extends WebGPUSystem {
-  stage = Stage.ShadowRender;
+  stage = Stage.DepthRender;
 
   #shadowPipelineCache = new WeakMap();
   #shadowCameraCache = new WeakMap();
@@ -126,8 +126,8 @@ export class WebGPUShadowSystem extends WebGPUSystem {
       },
       primitive: webgpuPipeline.layout.primitive,
       depthStencil: {
-        depthWriteEnabled: true,
-        depthCompare: 'less',
+        depthWriteEnabled: webgpuPipeline.depthWrite,
+        depthCompare: webgpuPipeline.depthCompare,
         format: 'depth32float',
       },
     });
@@ -191,7 +191,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
         shadowCamera.zRange[1] = shadowCaster.zFar;
 
         gpu.device.queue.writeBuffer(shadowCamera.cameraBuffer, 0, shadowCamera.arrayBuffer);
-        
+
         const propertyOffset = 0; // Directional light is always shadow index 0
         const shadowViewport = new Float32Array(shadowProperties.buffer, propertyOffset, 4);
         const viewProjMat = new Float32Array(shadowProperties.buffer, propertyOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 16);
@@ -263,7 +263,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     });
 
     if (!frameShadowCameras.length) { return; }
-    
+
     // TODO: Do spot lights as well
 
     gpu.device.queue.writeBuffer(gpu.lightShadowTableBuffer, 0, lightShadowTable);

@@ -9,6 +9,8 @@ import { WebGPUMeshSystem } from './webgpu-mesh.js';
 import { WebGPUShadowSystem } from './webgpu-shadow.js';
 import { WebGPURenderer } from './webgpu-renderer.js';
 import { WebGPUBloomSystem } from './webgpu-bloom.js';
+import { WebGPUSSAOSystem } from './webgpu-ssao.js';
+import { WebGPUDepthPrepassSystem } from './webgpu-depth-prepass.js';
 
 class WebGPURenderPass extends WebGPUSystem {
   async init(gpu) {
@@ -36,11 +38,17 @@ export class WebGPUWorld extends RenderWorld {
     this.registerRenderSystem(WebGPUClusteredLights);
     this.registerRenderSystem(WebGPUMeshSystem);
 
+    this.registerRenderSystem(WebGPUDepthPrepassSystem);
+
     if (flags.shadowsEnabled) {
       this.registerRenderSystem(WebGPUShadowSystem);
     }
 
     this.registerRenderSystem(WebGPURenderPass);
+
+    if (flags.ssaoEnabled) {
+      this.registerRenderSystem(WebGPUSSAOSystem);
+    }
 
     if (flags.bloomEnabled) {
       this.registerRenderSystem(WebGPUBloomSystem);

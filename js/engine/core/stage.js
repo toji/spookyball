@@ -4,7 +4,7 @@ export const Stage = {
   Default: 0,
   PostFrameLogic: 1,
   PreRender: 2,
-  ShadowRender: 3,
+  DepthRender: 3,
   Render: 4,
   PostRender: 5,
   Last: 999

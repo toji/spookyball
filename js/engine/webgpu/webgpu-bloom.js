@@ -7,7 +7,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
   stage = Stage.PostRender;
   frameIndex = 0;
   init(gpu) {
-    // Setup a render pipeline for drawing debug views of textured quads
+    // Setup a render pipelines for blurring the emmissive texture
     this.blurHorizonalPipeline = gpu.device.createRenderPipeline({
       label: `Bloom Blur Horizontal Pipeline`,
       vertex: {
@@ -74,8 +74,8 @@ export class WebGPUBloomSystem extends WebGPUSystem {
               dstFactor: 'one',
             },
             alpha: {
-              srcFactor: "one",
-              dstFactor: "one",
+              srcFactor: 'one',
+              dstFactor: 'one',
             }
           }
         }],
@@ -100,6 +100,33 @@ export class WebGPUBloomSystem extends WebGPUSystem {
   }
 
   onRenderTargetsReconfigured(gpu) {
+    // Allocate the intermediate textures used to blur the bloom effect.
+    const bloomSize = {
+      width: Math.floor(gpu.renderTargets.size.width * 0.5),
+      height: Math.floor(gpu.renderTargets.size.height * 0.5)
+    };
+    this.bloomTextures = [
+      gpu.device.createTexture({
+        label: 'Bloom horizontal blur target',
+        size: bloomSize,
+        format: gpu.renderTargets.format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      }),
+      // Two last-stage textures for ping-ponging to allow glowy trails.
+      gpu.device.createTexture({
+        label: 'Bloom vertial blur target A',
+        size: bloomSize,
+        format: gpu.renderTargets.format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      }),
+      gpu.device.createTexture({
+        label: 'Bloom vertial blur target B',
+        size: bloomSize,
+        format: gpu.renderTargets.format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      })
+    ];
+
     this.pass0BindGroup = gpu.device.createBindGroup({
       label: 'Bloom Blur Pass 0 Bind Group',
       layout: this.blurHorizonalPipeline.getBindGroupLayout(0),
@@ -124,13 +151,13 @@ export class WebGPUBloomSystem extends WebGPUSystem {
           resource: { buffer: this.blurUniformBuffer },
         }, {
           binding: 1,
-          resource: gpu.renderTargets.bloomTextures[0].createView(),
+          resource: this.bloomTextures[0].createView(),
         }, {
           binding: 2,
           resource: gpu.defaultSampler,
         }, {
           binding: 3,
-          resource: gpu.renderTargets.bloomTextures[2].createView(),
+          resource: this.bloomTextures[2].createView(),
         }]
       }),
       gpu.device.createBindGroup({
@@ -141,13 +168,13 @@ export class WebGPUBloomSystem extends WebGPUSystem {
           resource: { buffer: this.blurUniformBuffer },
         }, {
           binding: 1,
-          resource: gpu.renderTargets.bloomTextures[0].createView(),
+          resource: this.bloomTextures[0].createView(),
         }, {
           binding: 2,
           resource: gpu.defaultSampler,
         }, {
           binding: 3,
-          resource: gpu.renderTargets.bloomTextures[1].createView(),
+          resource: this.bloomTextures[1].createView(),
         }]
       }),
     ];
@@ -158,7 +185,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
         layout: this.blendPipeline.getBindGroupLayout(0),
         entries: [{
           binding: 0,
-          resource: gpu.renderTargets.bloomTextures[1].createView(),
+          resource: this.bloomTextures[1].createView(),
         }, {
           binding: 1,
           resource: gpu.defaultSampler,
@@ -169,7 +196,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
         layout: this.blendPipeline.getBindGroupLayout(0),
         entries: [{
           binding: 0,
-          resource: gpu.renderTargets.bloomTextures[2].createView(),
+          resource: this.bloomTextures[2].createView(),
         }, {
           binding: 1,
           resource: gpu.defaultSampler,
@@ -179,7 +206,6 @@ export class WebGPUBloomSystem extends WebGPUSystem {
   }
 
   execute(delta, time, gpu) {
-    const bloomTextures = gpu.renderTargets.bloomTextures;
     const commandEncoder = gpu.device.createCommandEncoder({});
 
     const pingPongIndex = this.frameIndex % 2;
@@ -187,7 +213,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     // 1st pass (Horizontal blur)
     let passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
-        view: bloomTextures[0].createView(),
+        view: this.bloomTextures[0].createView(),
         loadValue: {r: 0, g: 0, b: 0, a: 1.0},
         storeOp: 'store',
       }],
@@ -201,7 +227,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     // 2nd pass (Vertical blur)
     passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
-        view: bloomTextures[1 + pingPongIndex].createView(),
+        view: this.bloomTextures[1 + pingPongIndex].createView(),
         loadValue: {r: 0, g: 0, b: 0, a: 1.0},
         storeOp: 'store',
       }],

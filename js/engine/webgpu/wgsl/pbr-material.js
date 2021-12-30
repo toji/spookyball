@@ -50,8 +50,8 @@ function PBRSurfaceInfo(layout) { return wgsl`
 
 #if ${layout.locationsUsed.includes(AttributeLocation.tangent)}
     let tbn = mat3x3(input.tangent, input.bitangent, input.normal);
-    let N = textureSample(normalTexture, normalSampler, input.texcoord).rgb;
-    surface.normal = normalize(tbn * (2.0 * N - vec3(1.0)));
+    let normalMap = textureSample(normalTexture, normalSampler, input.texcoord).rgb;
+    surface.normal = normalize(tbn * (2.0 * normalMap - vec3(1.0)));
 #else
     surface.normal = normalize(input.normal);
 #endif

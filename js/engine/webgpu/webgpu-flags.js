@@ -16,4 +16,7 @@ export const WEBGPU_DEFAULT_FLAGS = {
 
   // Bloom
   bloomEnabled: true,
+
+  // SSAO
+  ssaoEnabled: true,
 };

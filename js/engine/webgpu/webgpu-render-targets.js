@@ -3,9 +3,12 @@ export class WebGPURenderTargets extends EventTarget {
   context;
 
   msaaColorTexture;
+  msaaDepthTexture;
   msaaEmissiveTexture;
+  msaaNormalTexture;
   emissiveTexture;
   depthTexture;
+  normalTexture;
 
   format = 'bgra8unorm';
   depthFormat = 'depth24plus';
@@ -13,13 +16,15 @@ export class WebGPURenderTargets extends EventTarget {
 
   constructor(adapter, device, canvas, flags) {
     super();
-    
+
     this.format = flags.colorFormat;
     this.depthFormat = flags.depthFormat;
     this.sampleCount = flags.sampleCount;
     this.resolutionMultiplier = flags.resolutionMultiplier;
 
+    this.useDepth = this.sampleCount == 1 || flags.ssaoEnabled;
     this.useEmissive = flags.bloomEnabled;
+    this.useNormal = flags.ssaoEnabled;
 
     this.context = canvas.getContext('webgpu');
 
@@ -73,12 +78,22 @@ export class WebGPURenderTargets extends EventTarget {
     }
 
     if (this.depthFormat) {
-      this.depthTexture = device.createTexture({
-        size: this.size,
-        sampleCount: this.sampleCount,
-        format: this.depthFormat,
-        usage: GPUTextureUsage.RENDER_ATTACHMENT
-      });
+      if (this.sampleCount > 1) {
+        this.msaaDepthTexture = device.createTexture({
+          size: this.size,
+          sampleCount: this.sampleCount,
+          format: this.depthFormat,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+        });
+      }
+
+      if (this.useDepth) {
+        this.depthTexture = device.createTexture({
+          size: this.size,
+          format: this.depthFormat,
+          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+        });
+      }
     }
 
     if (this.useEmissive) {
@@ -95,29 +110,22 @@ export class WebGPURenderTargets extends EventTarget {
         format: this.format,
         usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
       });
+    }
 
-      const bloomSize = {
-        width: Math.floor(this.size.width * 0.5),
-        height: Math.floor(this.size.height * 0.5)
-      };
-      this.bloomTextures = [
-        device.createTexture({
-          size: bloomSize,
+    if (this.useNormal) {
+      if (this.sampleCount > 1) {
+        this.msaaNormalTexture = device.createTexture({
+          size: this.size,
+          sampleCount: this.sampleCount,
           format: this.format,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-        }),
-        // Two last-stage textures for ping-ponging to allow glowy trails.
-        device.createTexture({
-          size: bloomSize,
-          format: this.format,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-        }),
-        device.createTexture({
-          size: bloomSize,
-          format: this.format,
-          usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
-        })
-      ];
+          usage: GPUTextureUsage.RENDER_ATTACHMENT,
+        });
+      }
+      this.normalTexture = device.createTexture({
+        size: this.size,
+        format: this.format,
+        usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
+      });
     }
 
     this.dispatchEvent(new Event('reconfigured'));

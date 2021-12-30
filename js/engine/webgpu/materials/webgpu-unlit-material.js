@@ -8,6 +8,8 @@ const materialArray = new Float32Array(MATERIAL_BUFFER_SIZE / Float32Array.BYTES
 const baseColorFactor = new Float32Array(materialArray.buffer, 0, 4);
 
 export class WebGPUUnlitMaterial extends WebGPUMaterialFactory {
+  writesNormal = true;
+
   init(gpu) {
     this.bindGroupLayout = gpu.device.createBindGroupLayout({
       label: 'Unlit Material BindGroupLayout',
