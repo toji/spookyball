@@ -36,7 +36,20 @@ export class WebGPUBindGroupLayouts {
         binding: 7, // Shadow properites
         visibility: GPUShaderStage.FRAGMENT,
         buffer: { type: 'read-only-storage' }
-      },]
+      }, {
+        binding: 8, // SSAO texture
+        visibility: GPUShaderStage.FRAGMENT,
+        texture: {}
+      }]
+    });
+
+    this.cameraOnly = device.createBindGroupLayout({
+      label: `Camera only BindGroupLayout`,
+      entries: [{
+        binding: 0, // Camera uniforms
+        visibility: GPUShaderStage.VERTEX | GPUShaderStage.FRAGMENT,
+        buffer: {},
+      }]
     });
 
     this.instance = this.model = device.createBindGroupLayout({

@@ -53,6 +53,8 @@ export class WebGPURenderer extends Renderer {
       addressModeV: 'repeat',
     });
 
+    this.renderTargets.ssaoTexture = this.#textureLoader.fromNoise(256, 256).texture;
+
     // Shadow mapping (TODO: Allocate dynamically only if shadows are needed)
     this.shadowDepthTexture = this.device.createTexture({
       size: [this.shadowAtlasSize, this.shadowAtlasSize],

@@ -73,6 +73,21 @@ export class WebGPUCamera extends WebGPUCameraBase {
       }],
     });
 
+    this.cameraOnlyBindGroup = gpu.device.createBindGroup({
+      layout: gpu.bindGroupLayouts.cameraOnly,
+      entries: [{
+        binding: 0,
+        resource: { buffer: this.cameraBuffer, },
+      }],
+    });
+
+    gpu.renderTargets.addEventListener('reconfigured', () => {
+      this.onRenderTargetsReconfigured(gpu, lightBuffer);
+    });
+    this.onRenderTargetsReconfigured(gpu, lightBuffer);
+  }
+
+  onRenderTargetsReconfigured(gpu, lightBuffer) {
     this.bindGroup = gpu.device.createBindGroup({
       layout: gpu.bindGroupLayouts.frame,
       entries: [{
@@ -99,6 +114,9 @@ export class WebGPUCamera extends WebGPUCameraBase {
       }, {
         binding: 7,
         resource: { buffer: gpu.shadowPropertiesBuffer, },
+      }, {
+        binding: 8,
+        resource: gpu.renderTargets.ssaoTexture.createView(),
       }],
     });
   }

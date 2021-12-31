@@ -2,17 +2,17 @@ import { CameraStruct } from './common.js';
 
 export const SSAOFragmentSource = `
 ${CameraStruct(0, 0)}
-[[group(0), binding(3)]] var defaultSampler : sampler;
 
 [[group(1), binding(0)]] var depthTexture : texture_depth_2d;
 [[group(1), binding(1)]] var normalTexture : texture_2d<f32>;
 [[group(1), binding(2)]] var noiseTexture : texture_2d<f32>;
+[[group(1), binding(3)]] var defaultSampler : sampler;
 
 struct SSAO {
   sampleCount : u32;
   samples : array<vec3<f32>>;
 };
-[[group(1), binding(3)]] var<storage, read> ssao : SSAO;
+[[group(1), binding(4)]] var<storage, read> ssao : SSAO;
 
 fn screen2View(texCoord : vec2<f32>, depth : f32) -> vec3<f32> {
   let clip = vec4(texCoord * 2.0 - vec2(1.0), depth, 1.0);

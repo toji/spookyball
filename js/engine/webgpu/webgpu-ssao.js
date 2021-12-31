@@ -8,7 +8,7 @@ import { vec3 } from 'gl-matrix';
 const SSAO_SAMPLES = 64;
 
 export class WebGPUSSAOSystem extends WebGPUSystem {
-  stage = Stage.PostRender;
+  stage = Stage.SSAORender;
 
   init(gpu) {
     this.ssaoTextureBGL = this.model = gpu.device.createBindGroupLayout({
@@ -17,19 +17,20 @@ export class WebGPUSSAOSystem extends WebGPUSystem {
         binding: 0, // Depth texture
         visibility: GPUShaderStage.FRAGMENT,
         texture: { sampleType: 'depth' },
-      },
-      {
+      }, {
         binding: 1, // Normal texture
         visibility: GPUShaderStage.FRAGMENT,
         texture: { },
-      },
-      {
+      }, {
         binding: 2, // Noise texture
         visibility: GPUShaderStage.FRAGMENT,
         texture: { },
-      },
-      {
-        binding: 3, // Sample kernel texture
+      }, {
+        binding: 3, // Default Sampler
+        visibility: GPUShaderStage.FRAGMENT,
+        sampler: {}
+      }, {
+        binding: 4, // Sample kernel texture
         visibility: GPUShaderStage.FRAGMENT,
         buffer: { type: 'read-only-storage' },
       }]
@@ -39,7 +40,7 @@ export class WebGPUSSAOSystem extends WebGPUSystem {
       label: `SSAO Pipeline`,
       layout: gpu.device.createPipelineLayout({
         bindGroupLayouts: [
-          gpu.bindGroupLayouts.frame,
+          gpu.bindGroupLayouts.cameraOnly,
           this.ssaoTextureBGL,
         ]
       }),
@@ -85,23 +86,35 @@ export class WebGPUSSAOSystem extends WebGPUSystem {
     }
     this.sampleBuffer.unmap();
 
+    gpu.renderTargets.addEventListener('reallocate', () => {
+      this.onReallocateRenderTargets(gpu);
+    });
     gpu.renderTargets.addEventListener('reconfigured', () => {
       this.onRenderTargetsReconfigured(gpu);
     });
     this.onRenderTargetsReconfigured(gpu);
+    gpu.renderTargets.markReconfigured();
   }
 
-  onRenderTargetsReconfigured(gpu) {
+  onReallocateRenderTargets(gpu) {
     // Allocate the ssao texture.
-    this.ssaoTexture = gpu.device.createTexture({
+    gpu.renderTargets.ssaoTexture = gpu.device.createTexture({
       label: 'SSAO target',
       size: gpu.renderTargets.size,
       format: 'r8unorm',
       usage: GPUTextureUsage.RENDER_ATTACHMENT | GPUTextureUsage.TEXTURE_BINDING,
     });
 
+    this.ssaoColorAttachments = [{
+      view: gpu.renderTargets.ssaoTexture.createView(),
+      loadValue: {r: 0, g: 0, b: 0, a: 1.0},
+      storeOp: 'store',
+    }];
+  }
+
+  onRenderTargetsReconfigured(gpu) {
     this.ssaoBindGroup = gpu.device.createBindGroup({
-      label: 'Bloom Blur Pass 0 Bind Group',
+      label: 'SSAO Pass Bind Group',
       layout: this.ssaoTextureBGL,
       entries: [{
         binding: 0,
@@ -114,17 +127,14 @@ export class WebGPUSSAOSystem extends WebGPUSystem {
         resource: this.noiseTexture.createView(),
       }, {
         binding: 3,
+        resource: gpu.defaultSampler,
+      }, {
+        binding: 4,
         resource: {
           buffer: this.sampleBuffer,
         }
       }]
     });
-
-    this.ssaoColorAttachments = [{
-      view: this.ssaoTexture.createView(),
-      loadValue: {r: 0, g: 0, b: 0, a: 1.0},
-      storeOp: 'store',
-    }];
   }
 
   execute(delta, time, gpu) {
@@ -137,7 +147,7 @@ export class WebGPUSSAOSystem extends WebGPUSystem {
       });
 
       passEncoder.setPipeline(this.ssaoPipeline);
-      passEncoder.setBindGroup(0, camera.bindGroup);
+      passEncoder.setBindGroup(0, camera.cameraOnlyBindGroup);
       passEncoder.setBindGroup(1, this.ssaoBindGroup);
       passEncoder.draw(3);
       passEncoder.endPass();

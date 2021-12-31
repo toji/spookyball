@@ -44,11 +44,11 @@ export class WebGPUWorld extends RenderWorld {
       this.registerRenderSystem(WebGPUShadowSystem);
     }
 
-    this.registerRenderSystem(WebGPURenderPass);
-
     if (flags.ssaoEnabled) {
       this.registerRenderSystem(WebGPUSSAOSystem);
     }
+
+    this.registerRenderSystem(WebGPURenderPass);
 
     if (flags.bloomEnabled) {
       this.registerRenderSystem(WebGPUBloomSystem);

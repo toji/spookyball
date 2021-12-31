@@ -230,7 +230,7 @@ if (debugMode) {
         world.create(new WebGPUDebugTextureView(world.getSystem(WebGPUBloomSystem).bloomTextures[1].createView()));
         break;
       case 'ssao':
-        world.create(new WebGPUDebugTextureView(world.getSystem(WebGPUSSAOSystem).ssaoTexture.createView()));
+        world.create(new WebGPUDebugTextureView(renderer.renderTargets.ssaoTexture.createView()));
         break;
       default:
         world.removeSystem(WebGPUTextureDebugSystem);
@@ -284,7 +284,8 @@ world.create(
   moonlight,
   new ShadowCastingLight({ textureSize: 1024, width: 75, height: 50, zNear: 0.1, up: [0, 1, 0] }),
   new Transform({ position: [26, 25, 36] }),
-  new AmbientLight(0.075, 0.075, 0.075)
+  //new AmbientLight(0.075, 0.075, 0.075),
+  new AmbientLight(0.25, 0.25, 0.25),
 );
 
 function onFrame(t) {

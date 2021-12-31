@@ -74,6 +74,9 @@ export class WebGPUShadowCamera extends WebGPUCameraBase {
       }, {
         binding: 7,
         resource: { buffer: gpu.shadowPropertiesBuffer, },
+      }, {
+        binding: 8,
+        resource: gpu.whiteTextureView,
       }],
     });
   }

@@ -9,6 +9,7 @@ export class WebGPURenderTargets extends EventTarget {
   emissiveTexture;
   depthTexture;
   normalTexture;
+  ssaoTexture;
 
   format = 'bgra8unorm';
   depthFormat = 'depth24plus';
@@ -128,6 +129,11 @@ export class WebGPURenderTargets extends EventTarget {
       });
     }
 
+    this.markReconfigured();
+  }
+
+  markReconfigured() {
+    this.dispatchEvent(new Event('reallocate'));
     this.dispatchEvent(new Event('reconfigured'));
   }
 }

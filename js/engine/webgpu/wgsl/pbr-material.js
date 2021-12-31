@@ -193,6 +193,8 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
   ${PBRSurfaceInfo(layout)}
   ${PBRFunctions(fullyRough)}
 
+  [[group(0), binding(8)]] var ssaoTexture : texture_2d<f32>;
+
   struct FragmentOutput {
     [[location(0)]] color : vec4<f32>;
 #if ${flags.bloomEnabled}
@@ -250,7 +252,10 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
       Lo = Lo + lightRadiance(light, surface) * lightVis;
     }
 
-    let ambient = globalLights.ambient * surface.albedo * surface.ao;
+    let ssaoCoord = (input.position.xy / vec2<f32>(textureDimensions(ssaoTexture).xy));// * 0.5 + vec2(0.5);
+    let ssaoFactor = textureSample(ssaoTexture, defaultSampler, ssaoCoord).r;
+
+    let ambient = globalLights.ambient * surface.albedo * surface.ao * ssaoFactor;
     let color = linearTosRGB(Lo + ambient + surface.emissive);
 
     var out : FragmentOutput;

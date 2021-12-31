@@ -5,7 +5,8 @@ export const Stage = {
   PostFrameLogic: 1,
   PreRender: 2,
   DepthRender: 3,
-  Render: 4,
-  PostRender: 5,
+  SSAORender: 4,
+  Render: 5,
+  PostRender: 6,
   Last: 999
 }
