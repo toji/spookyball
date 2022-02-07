@@ -4,16 +4,16 @@ export const SkyboxVertexSource = `
   ${CameraStruct(0, 0)}
 
   struct VertexInput {
-    [[builtin(instance_index)]] instanceIndex : u32;
-    [[location(0)]] position : vec4<f32>;
+    @builtin(instance_index) instanceIndex : u32;
+    @location(0) position : vec4<f32>;
   };
 
   struct VertexOutput {
-    [[builtin(position)]] position : vec4<f32>;
-    [[location(0)]] texCoord : vec3<f32>;
+    @builtin(position) position : vec4<f32>;
+    @location(0) texCoord : vec3<f32>;
   };
 
-  [[stage(vertex)]]
+  @stage(vertex)
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
     output.texCoord = input.position.xyz;
@@ -32,15 +32,15 @@ export const SkyboxVertexSource = `
 
 export const SkyboxFragmentSource = `
   ${ColorConversions}
-  [[group(0), binding(3)]] var defaultSampler : sampler;
+  @group(0) @binding(3) var defaultSampler : sampler;
 
   struct FragmentInput {
-    [[location(0)]] texCoord : vec3<f32>;
+    @location(0) texCoord : vec3<f32>;
   };
-  [[group(1), binding(0)]] var skyboxTexture : texture_cube<f32>;
+  @group(1) @binding(0) var skyboxTexture : texture_cube<f32>;
 
-  [[stage(fragment)]]
-  fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+  @stage(fragment)
+  fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
     let color = textureSample(skyboxTexture, defaultSampler, input.texCoord);
     return vec4(linearTosRGB(color.rgb), 1.0);
   }

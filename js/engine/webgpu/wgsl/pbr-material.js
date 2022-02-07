@@ -1,4 +1,4 @@
-import { wgsl } from './wgsl-utils.js';
+import { wgsl } from 'wgsl-preprocessor';
 import { AttributeLocation } from '../../core/mesh.js';
 import { CameraStruct, LightStruct, ColorConversions, DefaultVertexOutput } from './common.js';
 import { ClusterLightsStruct, TileFunctions } from './clustered-light.js';
@@ -13,18 +13,18 @@ export function MaterialStruct(group = 1) { return `
     metallicRoughnessFactor : vec2<f32>;
     alphaCutoff : f32;
   };
-  [[group(${group}), binding(0)]] var<uniform> material : Material;
+  @group(${group}) @binding(0) var<uniform> material : Material;
 
-  [[group(${group}), binding(1)]] var baseColorTexture : texture_2d<f32>;
-  [[group(${group}), binding(2)]] var baseColorSampler : sampler;
-  [[group(${group}), binding(3)]] var normalTexture : texture_2d<f32>;
-  [[group(${group}), binding(4)]] var normalSampler : sampler;
-  [[group(${group}), binding(5)]] var metallicRoughnessTexture : texture_2d<f32>;
-  [[group(${group}), binding(6)]] var metallicRoughnessSampler : sampler;
-  [[group(${group}), binding(7)]] var occlusionTexture : texture_2d<f32>;
-  [[group(${group}), binding(8)]] var occlusionSampler : sampler;
-  [[group(${group}), binding(9)]] var emissiveTexture : texture_2d<f32>;
-  [[group(${group}), binding(10)]] var emissiveSampler : sampler;
+  @group(${group}) @binding(1) var baseColorTexture : texture_2d<f32>;
+  @group(${group}) @binding(2) var baseColorSampler : sampler;
+  @group(${group}) @binding(3) var normalTexture : texture_2d<f32>;
+  @group(${group}) @binding(4) var normalSampler : sampler;
+  @group(${group}) @binding(5) var metallicRoughnessTexture : texture_2d<f32>;
+  @group(${group}) @binding(6) var metallicRoughnessSampler : sampler;
+  @group(${group}) @binding(7) var occlusionTexture : texture_2d<f32>;
+  @group(${group}) @binding(8) var occlusionSampler : sampler;
+  @group(${group}) @binding(9) var emissiveTexture : texture_2d<f32>;
+  @group(${group}) @binding(10) var emissiveSampler : sampler;
 `;
 }
 
@@ -194,13 +194,13 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
   ${PBRFunctions(fullyRough)}
 
   struct FragmentOutput {
-    [[location(0)]] color : vec4<f32>;
+    @location(0) color : vec4<f32>;
 #if ${flags.bloomEnabled}
-    [[location(1)]] emissive : vec4<f32>;
+    @location(1) emissive : vec4<f32>;
 #endif
   };
 
-  [[stage(fragment)]]
+  @stage(fragment)
   fn fragmentMain(input : VertexOutput) -> FragmentOutput {
     let surface = GetSurfaceInfo(input);
 

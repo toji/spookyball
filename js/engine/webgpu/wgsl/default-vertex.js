@@ -1,4 +1,4 @@
-import { wgsl } from './wgsl-utils.js';
+import { wgsl } from 'wgsl-preprocessor';
 import { AttributeLocation } from '../../core/mesh.js';
 import { CameraStruct, SkinStructs, GetSkinMatrix, DefaultVertexInput, DefaultVertexOutput, GetInstanceMatrix } from './common.js';
 
@@ -15,7 +15,7 @@ export function DefaultVertexSource(layout, skinned = false) { return wgsl`
   ${GetSkinMatrix}
 #endif
 
-  [[stage(vertex)]]
+  @stage(vertex)
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 

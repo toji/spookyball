@@ -1,15 +1,15 @@
-import { wgsl } from './wgsl-utils.js';
+import { wgsl } from 'wgsl-preprocessor';
 import { DefaultVertexOutput } from './common.js';
 
 export function ShadowFunctions(group = 0, flags) { return wgsl`
-  [[group(0), binding(3)]] var defaultSampler: sampler;
-  [[group(${group}), binding(4)]] var shadowTexture : texture_depth_2d;
-  [[group(${group}), binding(5)]] var shadowSampler : sampler_comparison;
+  @group(0) @binding(3) var defaultSampler: sampler;
+  @group(${group}) @binding(4) var shadowTexture : texture_depth_2d;
+  @group(${group}) @binding(5) var shadowSampler : sampler_comparison;
 
   struct LightShadowTable {
     light : array<i32>;
   };
-  [[group(${group}), binding(6)]] var<storage, read> lightShadowTable : LightShadowTable;
+  @group(${group}) @binding(6) var<storage, read> lightShadowTable : LightShadowTable;
 
 #if ${flags.shadowSamples == 16}
   var<private> shadowSampleOffsets : array<vec2<f32>, 16> = array<vec2<f32>, 16>(
@@ -43,7 +43,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
   struct LightShadows {
     properties : array<ShadowProperties>;
   };
-  [[group(${group}), binding(7)]] var<storage, read> shadow : LightShadows;
+  @group(${group}) @binding(7) var<storage, read> shadow : LightShadows;
 
   fn dirLightVisibility(worldPos : vec3<f32>) -> f32 {
     let shadowIndex = lightShadowTable.light[0u];
@@ -138,7 +138,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
 export function ShadowFragmentSource(layout) { return `
   ${DefaultVertexOutput(layout)}
 
-  [[stage(fragment)]]
+  @stage(fragment)
   fn fragmentMain(input : VertexOutput) {
   }
 `;

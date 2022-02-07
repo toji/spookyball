@@ -9,12 +9,12 @@ struct BloomUniforms {
   radius : f32;
   dim : f32;
 };
-[[group(0), binding(0)]] var<uniform> bloom : BloomUniforms;
-[[group(0), binding(1)]] var bloomTexture : texture_2d<f32>;
-[[group(0), binding(2)]] var bloomSampler : sampler;
+@group(0) @binding(0) var<uniform> bloom : BloomUniforms;
+@group(0) @binding(1) var bloomTexture : texture_2d<f32>;
+@group(0) @binding(2) var bloomSampler : sampler;
 
 struct FragmentInput {
-  [[location(0)]] texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>;
 };
 
 fn getGaussianBlur(texCoord : vec2<f32>) -> vec4<f32> {
@@ -45,8 +45,8 @@ export const BloomBlurHorizontalFragmentSource = `
 let bloomDir = vec2(1.0, 0.0);
 ${BloomBlurCommon}
 
-[[stage(fragment)]]
-fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   return getGaussianBlur(input.texCoord);
 }
 `;
@@ -56,10 +56,10 @@ export const BloomBlurVerticalFragmentSource = `
 let bloomDir = vec2(0.0, 1.0);
 ${BloomBlurCommon}
 
-[[group(0), binding(3)]] var prevTexture : texture_2d<f32>;
+@group(0) @binding(3) var prevTexture : texture_2d<f32>;
 
-[[stage(fragment)]]
-fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let blurColor = getGaussianBlur(input.texCoord);
   let dimColor = textureSample(prevTexture, bloomSampler, input.texCoord) * bloom.dim;
 
@@ -68,15 +68,15 @@ fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
 `;
 
 export const BloomBlendFragmentSource = `
-[[group(0), binding(0)]] var bloomTexture : texture_2d<f32>;
-[[group(0), binding(1)]] var bloomSampler : sampler;
+@group(0) @binding(0) var bloomTexture : texture_2d<f32>;
+@group(0) @binding(1) var bloomSampler : sampler;
 
 struct FragmentInput {
-  [[location(0)]] texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>;
 };
 
-[[stage(fragment)]]
-fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let color = textureSample(bloomTexture, bloomSampler, input.texCoord);
   return vec4(color.rgb, 1.0);
 }

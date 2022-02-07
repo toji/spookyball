@@ -24,9 +24,9 @@ export function ClusterStruct(group, binding, access = 'read') { return `
     maxAABB : vec3<f32>;
   };
   struct Clusters {
-    bounds : [[stride(32)]] array<ClusterBounds, ${TOTAL_TILES}>;
+    bounds : array<ClusterBounds, ${TOTAL_TILES}>;
   };
-  [[group(${group}), binding(${binding})]] var<storage, ${access}> clusters : Clusters;
+  @group(${group}) @binding(${binding}) var<storage, ${access}> clusters : Clusters;
 `;
 }
 
@@ -37,10 +37,10 @@ export function ClusterLightsStruct(group=0, binding=2, access='read') { return 
   };
   struct ClusterLightGroup {
     offset : ${access == 'read' ? 'u32' : 'atomic<u32>'};
-    lights : [[stride(8)]] array<ClusterLights, ${TOTAL_TILES}>;
-    indices : [[stride(4)]] array<u32, ${MAX_CLUSTERED_LIGHTS}>;
+    lights : array<ClusterLights, ${TOTAL_TILES}>;
+    indices : array<u32, ${MAX_CLUSTERED_LIGHTS}>;
   };
-  [[group(${group}), binding(${binding})]] var<storage, ${access}> clusterLights : ClusterLightGroup;
+  @group(${group}) @binding(${binding}) var<storage, ${access}> clusterLights : ClusterLightGroup;
 `;
 }
 
@@ -95,8 +95,8 @@ export const ClusterBoundsSource = `
   let tileCount = vec3(${TILE_COUNT[0]}u, ${TILE_COUNT[1]}u, ${TILE_COUNT[2]}u);
   let eyePos = vec3(0.0);
 
-  [[stage(compute), workgroup_size(${WORKGROUP_SIZE[0]}, ${WORKGROUP_SIZE[1]}, ${WORKGROUP_SIZE[2]})]]
-  fn computeMain([[builtin(global_invocation_id)]] global_id : vec3<u32>) {
+  @stage(compute) @workgroup_size(${WORKGROUP_SIZE[0]}, ${WORKGROUP_SIZE[1]}, ${WORKGROUP_SIZE[2]})
+  fn computeMain(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let tileIndex : u32 = global_id.x +
                           global_id.y * tileCount.x +
                           global_id.z * tileCount.x * tileCount.y;
@@ -150,8 +150,8 @@ export const ClusterLightsSource = `
     return sqDist;
   }
 
-  [[stage(compute), workgroup_size(${WORKGROUP_SIZE[0]}, ${WORKGROUP_SIZE[1]}, ${WORKGROUP_SIZE[2]})]]
-  fn computeMain([[builtin(global_invocation_id)]] global_id : vec3<u32>) {
+  @stage(compute) @workgroup_size(${WORKGROUP_SIZE[0]}, ${WORKGROUP_SIZE[1]}, ${WORKGROUP_SIZE[2]})
+  fn computeMain(@builtin(global_invocation_id) global_id : vec3<u32>) {
     let tileIndex = global_id.x +
                     global_id.y * tileCount.x +
                     global_id.z * tileCount.x * tileCount.y;
