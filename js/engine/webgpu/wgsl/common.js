@@ -1,9 +1,9 @@
-import { wgsl } from './wgsl-utils.js';
+import { wgsl } from 'wgsl-preprocessor';
 import { AttributeLocation } from '../../core/mesh.js';
 
 export const CAMERA_BUFFER_SIZE = 56 * Float32Array.BYTES_PER_ELEMENT;
 export function CameraStruct(group = 0, binding = 0) { return `
-  [[block]] struct Camera {
+  struct Camera {
     projection : mat4x4<f32>;
     inverseProjection : mat4x4<f32>;
     view : mat4x4<f32>;
@@ -13,7 +13,7 @@ export function CameraStruct(group = 0, binding = 0) { return `
     zNear : f32;
     zFar : f32;
   };
-  [[group(${group}), binding(${binding})]] var<uniform> camera : Camera;
+  @group(${group}) @binding(${binding}) var<uniform> camera : Camera;
 `;
 }
 
@@ -26,24 +26,24 @@ export function LightStruct(group = 0, binding = 1) { return `
     intensity : f32;
   };
 
-  [[block]] struct GlobalLights {
+  struct GlobalLights {
     ambient : vec3<f32>;
     dirColor : vec3<f32>;
     dirIntensity : f32;
     dirDirection : vec3<f32>;
     lightCount : u32;
-    lights : [[stride(32)]] array<Light>;
+    lights : array<Light>;
   };
-  [[group(${group}), binding(${binding})]] var<storage, read> globalLights : GlobalLights;
+  @group(${group}) @binding(${binding}) var<storage, read> globalLights : GlobalLights;
 `;
 }
 
 export function SkinStructs(group = 1) { return `
-  [[block]] struct Joints {
-    matrices : [[stride(64)]] array<mat4x4<f32>>;
+  struct Joints {
+    matrices : array<mat4x4<f32>>;
   };
-  [[group(${group}), binding(0)]] var<storage, read> joint : Joints;
-  [[group(${group}), binding(1)]] var<storage, read> inverseBind : Joints;
+  @group(${group}) @binding(0) var<storage, read> joint : Joints;
+  @group(${group}) @binding(1) var<storage, read> inverseBind : Joints;
 `};
 
 export const GetSkinMatrix = `
@@ -67,22 +67,22 @@ export const INSTANCE_SIZE_BYTES = INSTANCE_SIZE_F32 * Float32Array.BYTES_PER_EL
 export function DefaultVertexInput(layout) {
   let inputs = layout.locationsUsed.map((location) => {
       switch(location) {
-      case AttributeLocation.position: return `[[location(${AttributeLocation.position})]] position : vec4<f32>;`;
-      case AttributeLocation.normal: return `[[location(${AttributeLocation.normal})]] normal : vec3<f32>;`;
-      case AttributeLocation.tangent: return `[[location(${AttributeLocation.tangent})]] tangent : vec4<f32>;`;
-      case AttributeLocation.texcoord: return `[[location(${AttributeLocation.texcoord})]] texcoord : vec2<f32>;`;
-      case AttributeLocation.texcoord2: return `[[location(${AttributeLocation.texcoord2})]] texcoord2 : vec2<f32>;`;
-      case AttributeLocation.color: return `[[location(${AttributeLocation.color})]] color : vec4<f32>;`;
-      case AttributeLocation.joints: return `[[location(${AttributeLocation.joints})]] joints : vec4<u32>;`;
-      case AttributeLocation.weights: return `[[location(${AttributeLocation.weights})]] weights : vec4<f32>;`;
+      case AttributeLocation.position: return `@location(${AttributeLocation.position}) position : vec4<f32>;`;
+      case AttributeLocation.normal: return `@location(${AttributeLocation.normal}) normal : vec3<f32>;`;
+      case AttributeLocation.tangent: return `@location(${AttributeLocation.tangent}) tangent : vec4<f32>;`;
+      case AttributeLocation.texcoord: return `@location(${AttributeLocation.texcoord}) texcoord : vec2<f32>;`;
+      case AttributeLocation.texcoord2: return `@location(${AttributeLocation.texcoord2}) texcoord2 : vec2<f32>;`;
+      case AttributeLocation.color: return `@location(${AttributeLocation.color}) color : vec4<f32>;`;
+      case AttributeLocation.joints: return `@location(${AttributeLocation.joints}) joints : vec4<u32>;`;
+      case AttributeLocation.weights: return `@location(${AttributeLocation.weights}) weights : vec4<f32>;`;
       }
   });
 
-  inputs.push(`[[location(${AttributeLocation.maxAttributeLocation})]] instance0 : vec4<f32>;`);
-  inputs.push(`[[location(${AttributeLocation.maxAttributeLocation+1})]] instance1 : vec4<f32>;`);
-  inputs.push(`[[location(${AttributeLocation.maxAttributeLocation+2})]] instance2 : vec4<f32>;`);
-  inputs.push(`[[location(${AttributeLocation.maxAttributeLocation+3})]] instance3 : vec4<f32>;`);
-  inputs.push(`[[location(${AttributeLocation.maxAttributeLocation+4})]] instanceColor : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation}) instance0 : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+1}) instance1 : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+2}) instance2 : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+3}) instance3 : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+4}) instanceColor : vec4<f32>;`);
 
   return `struct VertexInput {
     ${inputs.join('\n')}
@@ -91,18 +91,18 @@ export function DefaultVertexInput(layout) {
 
 export function DefaultVertexOutput(layout) { return wgsl`
   struct VertexOutput {
-    [[builtin(position)]] position : vec4<f32>;
-    [[location(0)]] worldPos : vec3<f32>;
-    [[location(1)]] view : vec3<f32>; // Vector from vertex to camera.
-    [[location(2)]] texcoord : vec2<f32>;
-    [[location(3)]] texcoord2 : vec2<f32>;
-    [[location(4)]] color : vec4<f32>;
-    [[location(5)]] instanceColor : vec4<f32>;
-    [[location(6)]] normal : vec3<f32>;
+    @builtin(position) position : vec4<f32>;
+    @location(0) worldPos : vec3<f32>;
+    @location(1) view : vec3<f32>; // Vector from vertex to camera.
+    @location(2) texcoord : vec2<f32>;
+    @location(3) texcoord2 : vec2<f32>;
+    @location(4) color : vec4<f32>;
+    @location(5) instanceColor : vec4<f32>;
+    @location(6) normal : vec3<f32>;
 
 #if ${layout.locationsUsed.includes(AttributeLocation.tangent)}
-    [[location(7)]] tangent : vec3<f32>;
-    [[location(8)]] bitangent : vec3<f32>;
+    @location(7) tangent : vec3<f32>;
+    @location(8) bitangent : vec3<f32>;
 #endif
   };
 `;
@@ -110,7 +110,7 @@ export function DefaultVertexOutput(layout) { return wgsl`
 
 export const GetInstanceMatrix = `
   fn getInstanceMatrix(input : VertexInput) -> mat4x4<f32> {
-    return mat4x4<f32>(
+    return mat4x4(
       input.instance0,
       input.instance1,
       input.instance2,
@@ -119,56 +119,41 @@ export const GetInstanceMatrix = `
   }
 `;
 
-const APPROXIMATE_SRGB = true;
+const USE_APPROXIMATE_SRGB = true;
+const GAMMA = 2.2;
+
 export const ColorConversions = wgsl`
-#if ${APPROXIMATE_SRGB}
-  // linear <-> sRGB approximations
-  // see http://chilliant.blogspot.com/2012/08/srgb-approximations-for-hlsl.html
-  let GAMMA = 2.2;
   fn linearTosRGB(linear : vec3<f32>) -> vec3<f32> {
-    let INV_GAMMA = 1.0 / GAMMA;
-    return pow(linear, vec3<f32>(INV_GAMMA, INV_GAMMA, INV_GAMMA));
+    #if ${USE_APPROXIMATE_SRGB}
+      let INV_GAMMA = 1.0 / ${GAMMA};
+      return pow(linear, vec3(INV_GAMMA));
+    #else
+      if (all(linear <= vec3(0.0031308))) {
+        return linear * 12.92;
+      }
+      return (pow(abs(linear), vec3(1.0/2.4)) * 1.055) - vec3(0.055);
+    #endif
   }
-
-  fn sRGBToLinear(srgb : vec3<f32>) -> vec3<f32> {
-    return pow(srgb, vec3<f32>(GAMMA, GAMMA, GAMMA));
-  }
-#else
-  // linear <-> sRGB conversions
-  fn linearTosRGB(linear : vec3<f32>) -> vec3<f32> {
-    if (all(linear <= vec3<f32>(0.0031308, 0.0031308, 0.0031308))) {
-      return linear * 12.92;
-    }
-    return (pow(abs(linear), vec3<f32>(1.0/2.4, 1.0/2.4, 1.0/2.4)) * 1.055) - vec3<f32>(0.055, 0.055, 0.055);
-  }
-
-  fn sRGBToLinear(srgb : vec3<f32>) -> vec3<f32> {
-    if (all(srgb <= vec3<f32>(0.04045, 0.04045, 0.04045))) {
-      return srgb / vec3<f32>(12.92, 12.92, 12.92);
-    }
-    return pow((srgb + vec3<f32>(0.055, 0.055, 0.055)) / vec3<f32>(1.055, 1.055, 1.055), vec3<f32>(2.4, 2.4, 2.4));
-  }
-#endif
 `;
 
 export const FullscreenTexturedQuadVertexSource = `
   var<private> pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
-    vec2<f32>(-1.0, -1.0), vec2<f32>(-1.0, 3.0), vec2<f32>(3.0, -1.0));
+    vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 
   struct VertexInput {
-    [[builtin(vertex_index)]] vertexIndex : u32;
+    @builtin(vertex_index) vertexIndex : u32;
   };
 
   struct VertexOutput {
-    [[builtin(position)]] position : vec4<f32>;
-    [[location(0)]] texCoord : vec2<f32>;
+    @builtin(position) position : vec4<f32>;
+    @location(0) texCoord : vec2<f32>;
   };
 
-  [[stage(vertex)]]
+  @stage(vertex)
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 
-    output.position = vec4<f32>(pos[input.vertexIndex], 1.0, 1.0);
+    output.position = vec4(pos[input.vertexIndex], 1.0, 1.0);
     output.texCoord = pos[input.vertexIndex] * 0.5 + 0.5;
     output.texCoord.y = output.texCoord.y * -1.0;
 
@@ -178,14 +163,14 @@ export const FullscreenTexturedQuadVertexSource = `
 
 export const TextureDebugFragmentSource = `
 struct FragmentInput {
-  [[location(0)]] texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>;
 };
 
-[[group(0), binding(0)]] var debugTexture: texture_2d<f32>;
-[[group(0), binding(1)]] var debugSampler: sampler;
+@group(0) @binding(0) var debugTexture: texture_2d<f32>;
+@group(0) @binding(1) var debugSampler: sampler;
 
-[[stage(fragment)]]
-fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let color = textureSample(debugTexture, debugSampler, input.texCoord);
   return color;
 }
@@ -193,15 +178,15 @@ fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
 
 export const ShadowDebugFragmentSource = `
 struct FragmentInput {
-  [[location(0)]] texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>;
 };
 
-[[group(0), binding(0)]] var shadowTexture: texture_depth_2d;
-[[group(0), binding(1)]] var shadowSampler: sampler;
+@group(0) @binding(0) var shadowTexture: texture_depth_2d;
+@group(0) @binding(1) var shadowSampler: sampler;
 
-[[stage(fragment)]]
-fn fragmentMain(input : FragmentInput) -> [[location(0)]] vec4<f32> {
+@stage(fragment)
+fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let shadowDepth = textureSample(shadowTexture, shadowSampler, input.texCoord);
-  return vec4<f32>(shadowDepth, shadowDepth, shadowDepth, 1.0);
+  return vec4(shadowDepth, shadowDepth, shadowDepth, 1.0);
 }
 `;

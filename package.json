@@ -12,7 +12,8 @@
         "gl-matrix": "^3.4.3",
         "matter-js": "^0.17.1",
         "stats.js": "^0.17.0",
-        "web-texture-tool": "github:toji/web-texture-tool"
+        "web-texture-tool": "github:toji/web-texture-tool",
+        "wgsl-preprocessor": "^1.0.0"
     },
     "devDependencies": {
         "esbuild": "^0.12.15",

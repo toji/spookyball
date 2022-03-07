@@ -1,4 +1,4 @@
-import { wgsl } from './wgsl-utils.js';
+import { wgsl } from 'wgsl-preprocessor';
 import { AttributeLocation } from '../../core/mesh.js';
 import { CameraStruct, SkinStructs, GetSkinMatrix, DefaultVertexInput, DefaultVertexOutput, GetInstanceMatrix } from './common.js';
 
@@ -15,7 +15,7 @@ export function DefaultVertexSource(layout, skinned = false) { return wgsl`
   ${GetSkinMatrix}
 #endif
 
-  [[stage(vertex)]]
+  @stage(vertex)
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 
@@ -26,20 +26,20 @@ export function DefaultVertexSource(layout, skinned = false) { return wgsl`
 #endif
 
 #if ${layout.locationsUsed.includes(AttributeLocation.normal)}
-    output.normal = normalize((modelMatrix * vec4<f32>(input.normal, 0.0)).xyz);
+    output.normal = normalize((modelMatrix * vec4(input.normal, 0.0)).xyz);
 #else
-    output.normal = normalize((modelMatrix * vec4<f32>(0.0, 0.0, 1.0, 0.0)).xyz);
+    output.normal = normalize((modelMatrix * vec4(0.0, 0.0, 1.0, 0.0)).xyz);
 #endif
 
 #if ${layout.locationsUsed.includes(AttributeLocation.tangent)}
-    output.tangent = normalize((modelMatrix * vec4<f32>(input.tangent.xyz, 0.0)).xyz);
+    output.tangent = normalize((modelMatrix * vec4(input.tangent.xyz, 0.0)).xyz);
     output.bitangent = cross(output.normal, output.tangent) * input.tangent.w;
 #endif
 
 #if ${layout.locationsUsed.includes(AttributeLocation.color)}
     output.color = input.color;
 #else
-    output.color = vec4<f32>(1.0, 1.0, 1.0, 1.0);
+    output.color = vec4(1.0);
 #endif
 
 #if ${layout.locationsUsed.includes(AttributeLocation.texcoord)}
