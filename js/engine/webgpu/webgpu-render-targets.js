@@ -13,7 +13,7 @@ export class WebGPURenderTargets extends EventTarget {
 
   constructor(adapter, device, canvas, flags) {
     super();
-    
+
     this.format = flags.colorFormat;
     this.depthFormat = flags.depthFormat;
     this.sampleCount = flags.sampleCount;
@@ -61,6 +61,7 @@ export class WebGPURenderTargets extends EventTarget {
       device: device,
       size: this.size,
       format: this.format,
+      compositingAlphaMode: 'opaque',
     });
 
     if (this.sampleCount > 1) {

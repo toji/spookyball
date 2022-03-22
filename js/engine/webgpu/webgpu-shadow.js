@@ -191,7 +191,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
         shadowCamera.zRange[1] = shadowCaster.zFar;
 
         gpu.device.queue.writeBuffer(shadowCamera.cameraBuffer, 0, shadowCamera.arrayBuffer);
-        
+
         const propertyOffset = 0; // Directional light is always shadow index 0
         const shadowViewport = new Float32Array(shadowProperties.buffer, propertyOffset, 4);
         const viewProjMat = new Float32Array(shadowProperties.buffer, propertyOffset + 4 * Float32Array.BYTES_PER_ELEMENT, 16);
@@ -263,7 +263,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     });
 
     if (!frameShadowCameras.length) { return; }
-    
+
     // TODO: Do spot lights as well
 
     gpu.device.queue.writeBuffer(gpu.lightShadowTableBuffer, 0, lightShadowTable);
@@ -276,10 +276,9 @@ export class WebGPUShadowSystem extends WebGPUSystem {
       colorAttachments: [],
       depthStencilAttachment: {
         view: gpu.shadowDepthTextureView,
-        depthLoadValue: 1.0,
+        depthClearValue: 1.0,
+        depthLoadOp: 'clear',
         depthStoreOp: 'store',
-        stencilLoadValue: 0,
-        stencilStoreOp: 'store',
       }
     });
 
@@ -342,7 +341,7 @@ export class WebGPUShadowSystem extends WebGPUSystem {
       }
     }
 
-    passEncoder.endPass();
+    passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }

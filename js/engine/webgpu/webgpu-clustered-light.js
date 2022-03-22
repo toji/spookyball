@@ -4,7 +4,7 @@
 import { WebGPUSystem } from './webgpu-system.js';
 import { WebGPUCamera } from './webgpu-camera.js';
 import {
-  DISPATCH_SIZE, 
+  DISPATCH_SIZE,
   ClusterBoundsSource,
   ClusterLightsSource
 } from './wgsl/clustered-light.js';
@@ -33,7 +33,7 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     }).then((pipeline) => {
       this.boundsPipeline = pipeline;
     });
-    
+
     device.createComputePipelineAsync({
       layout: device.createPipelineLayout({
         bindGroupLayouts: [
@@ -71,7 +71,7 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     passEncoder.setBindGroup(0, camera.bindGroup);
     passEncoder.setBindGroup(1, camera.clusterBoundsBindGroup);
     passEncoder.dispatch(...DISPATCH_SIZE);
-    passEncoder.endPass();
+    passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }
@@ -90,7 +90,7 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     passEncoder.setPipeline(this.lightsPipeline);
     passEncoder.setBindGroup(0, camera.clusterLightsBindGroup);
     passEncoder.dispatch(...DISPATCH_SIZE);
-    passEncoder.endPass();
+    passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }
