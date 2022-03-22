@@ -188,7 +188,8 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     let passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: bloomTextures[0].createView(),
-        loadValue: {r: 0, g: 0, b: 0, a: 1.0},
+        clearValue: {r: 0, g: 0, b: 0, a: 1.0},
+        loadOp: 'clear',
         storeOp: 'store',
       }],
     });
@@ -196,13 +197,14 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setPipeline(this.blurHorizonalPipeline);
     passEncoder.setBindGroup(0, this.pass0BindGroup);
     passEncoder.draw(3);
-    passEncoder.endPass();
+    passEncoder.end();
 
     // 2nd pass (Vertical blur)
     passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: bloomTextures[1 + pingPongIndex].createView(),
-        loadValue: {r: 0, g: 0, b: 0, a: 1.0},
+        clearValue: {r: 0, g: 0, b: 0, a: 1.0},
+        loadOp: 'clear',
         storeOp: 'store',
       }],
     });
@@ -210,13 +212,13 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setPipeline(this.blurVerticalPipeline);
     passEncoder.setBindGroup(0, this.pass1BindGroups[pingPongIndex]);
     passEncoder.draw(3);
-    passEncoder.endPass();
+    passEncoder.end();
 
     // Blend pass
     passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: gpu.renderTargets.context.getCurrentTexture().createView(),
-        loadValue: 'load',
+        loadOp: 'load',
         storeOp: 'store',
       }],
     });
@@ -224,7 +226,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setPipeline(this.blendPipeline);
     passEncoder.setBindGroup(0, this.blendPassBindGroups[pingPongIndex]);
     passEncoder.draw(3);
-    passEncoder.endPass();
+    passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
 

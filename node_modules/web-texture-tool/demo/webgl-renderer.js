@@ -282,6 +282,15 @@ export class WebGLRenderer {
     tile.texture = null;
   }
 
+  async loadTextureFromNoise(tile) {
+    // If an error occurs plug in a solid color texture to fill it's place.
+    const result = this.loader.fromNoise(256, 256);
+
+    tile.texture = result.texture;
+    tile.type = result.type;
+    return result;
+  }
+
   loadTextureFromUrl(tile, url) {
     return this.loader.fromUrl(url, {mipmaps: this.mipmaps}).then((result) => {
       const gl = this.gl;

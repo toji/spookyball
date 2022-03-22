@@ -61,6 +61,7 @@
         'Browser formats (KTX2)': 'ktximg',
         Cubemaps: 'cube',
         'Uncompressed Cubemaps': 'cubeuncompressed',
+        Noise: 'noise',
         All: 'all'
       };
 
@@ -185,6 +186,9 @@
           './textures/dds/shannon-dxt3.dds',
           './textures/dds/shannon-dxt5.dds',
         ],
+        noise: [
+          'noise',
+        ],
       };
 
       // Create a texture set that contains the textures from every other set.
@@ -259,7 +263,12 @@
         const textureSet = textureSets[settings.textureSet];
         const url = textureSet[nextTexturePath % textureSet.length];
         nextTexturePath++;
-        return renderer.loadTextureFromUrl(tile, url);
+
+        if (url == 'noise') {
+          return renderer.loadTextureFromNoise(tile);
+        } else {
+          return renderer.loadTextureFromUrl(tile, url);
+        }
       }
 
       let lastTimestamp = 0;

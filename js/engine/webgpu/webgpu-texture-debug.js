@@ -85,7 +85,8 @@ export class WebGPUTextureDebugSystem extends WebGPUSystem {
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: outputTexture.createView(),
-        loadValue: {r: 0, g: 0, b: 0, a: 1.0},
+        clearValue: {r: 0, g: 0, b: 0, a: 1.0},
+        loadOp: 'clear',
         storeOp: 'store',
       }],
     });
@@ -96,7 +97,7 @@ export class WebGPUTextureDebugSystem extends WebGPUSystem {
       passEncoder.draw(3);
     })
 
-    passEncoder.endPass();
+    passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }

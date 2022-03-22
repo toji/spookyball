@@ -92,6 +92,7 @@ class WebGLTextureClient {
     this.gl = gl;
     this.isWebGL2 = this.gl instanceof WebGL2RenderingContext;
     this.allowCompressedFormats = true;
+    this.allowTexStorage = true;
 
     // Compressed Texture Extensions
     this.extensions = {
@@ -184,7 +185,7 @@ class WebGLTextureClient {
     const texture = gl.createTexture();
     gl.bindTexture(gl.TEXTURE_2D, texture);
 
-    if (this.isWebGL2) {
+    if (this.isWebGL2 && this.allowTexStorage) {
       gl.texStorage2D(gl.TEXTURE_2D, mipLevels, wtFormat.gl.sizedFormat, imageBitmap.width, imageBitmap.height);
       gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, wtFormat.gl.format, wtFormat.gl.type, imageBitmap);
     } else {
@@ -246,7 +247,7 @@ class WebGLTextureClient {
     const texture = gl.createTexture();
     gl.bindTexture(target, texture);
 
-    const useTexStorage = this.isWebGL2 && (!wtFormat.compressed || wtFormat.gl.texStorage);
+    const useTexStorage = this.isWebGL2 && (!wtFormat.compressed || wtFormat.gl.texStorage) && this.allowTexStorage;
     if (useTexStorage) {
       gl.texStorage2D(target, mipLevelCount, wtFormat.gl.sizedFormat, textureData.width, textureData.height);
     }

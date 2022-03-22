@@ -84,7 +84,8 @@ export class WebGPURenderer extends Renderer {
       view: undefined,
       // view is acquired and set in onFrame.
       resolveTarget: undefined,
-      loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+      clearValue: {r: 0, g: 0, b: 0, a: 1.0},
+      loadOp: 'clear',
       storeOp: this.renderTargets.sampleCount > 1 ? 'discard' : 'store',
     };
 
@@ -96,7 +97,8 @@ export class WebGPURenderer extends Renderer {
         view: undefined,
         // view is acquired and set in onFrame.
         resolveTarget: undefined,
-        loadValue: { r: 0.0, g: 0.0, b: 0.0, a: 1.0 },
+        clearValue: {r: 0, g: 0, b: 0, a: 1.0},
+        loadOp: 'clear',
         storeOp: this.renderTargets.sampleCount > 1 ? 'discard' : 'store',
       };
 
@@ -106,10 +108,9 @@ export class WebGPURenderer extends Renderer {
     this.depthAttachment = {
       // view is acquired and set in onResize.
       view: undefined,
-      depthLoadValue: 1.0,
+      depthClearValue: 1.0,
+      depthLoadOp: 'clear',
       depthStoreOp: 'discard',
-      stencilLoadValue: 0,
-      stencilStoreOp: 'discard',
     };
 
     this.renderPassDescriptor = {
@@ -218,7 +219,7 @@ export class WebGPURenderer extends Renderer {
       }
     }
 
-    passEncoder.endPass();
+    passEncoder.end();
 
     this.device.queue.submit([commandEncoder.finish()]);
 
