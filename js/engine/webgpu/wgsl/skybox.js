@@ -4,13 +4,13 @@ export const SkyboxVertexSource = `
   ${CameraStruct(0, 0)}
 
   struct VertexInput {
-    @builtin(instance_index) instanceIndex : u32;
-    @location(0) position : vec4<f32>;
+    @builtin(instance_index) instanceIndex : u32,
+    @location(0) position : vec4<f32>,
   };
 
   struct VertexOutput {
-    @builtin(position) position : vec4<f32>;
-    @location(0) texCoord : vec3<f32>;
+    @builtin(position) position : vec4<f32>,
+    @location(0) texCoord : vec3<f32>,
   };
 
   @stage(vertex)
@@ -35,7 +35,7 @@ export const SkyboxFragmentSource = `
   @group(0) @binding(3) var defaultSampler : sampler;
 
   struct FragmentInput {
-    @location(0) texCoord : vec3<f32>;
+    @location(0) texCoord : vec3<f32>
   };
   @group(1) @binding(0) var skyboxTexture : texture_cube<f32>;
 

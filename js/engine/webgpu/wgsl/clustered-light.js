@@ -20,11 +20,11 @@ export const CLUSTER_LIGHTS_SIZE = 4 + (8 * TOTAL_TILES) + (4 * MAX_CLUSTERED_LI
 
 export function ClusterStruct(group, binding, access = 'read') { return `
   struct ClusterBounds {
-    minAABB : vec3<f32>;
-    maxAABB : vec3<f32>;
+    minAABB : vec3<f32>,
+    maxAABB : vec3<f32>,
   };
   struct Clusters {
-    bounds : array<ClusterBounds, ${TOTAL_TILES}>;
+    bounds : array<ClusterBounds, ${TOTAL_TILES}>
   };
   @group(${group}) @binding(${binding}) var<storage, ${access}> clusters : Clusters;
 `;
@@ -32,13 +32,13 @@ export function ClusterStruct(group, binding, access = 'read') { return `
 
 export function ClusterLightsStruct(group=0, binding=2, access='read') { return `
   struct ClusterLights {
-    offset : u32;
-    count : u32;
+    offset : u32,
+    count : u32,
   };
   struct ClusterLightGroup {
-    offset : ${access == 'read' ? 'u32' : 'atomic<u32>'};
-    lights : array<ClusterLights, ${TOTAL_TILES}>;
-    indices : array<u32, ${MAX_CLUSTERED_LIGHTS}>;
+    offset : ${access == 'read' ? 'u32' : 'atomic<u32>'},
+    lights : array<ClusterLights, ${TOTAL_TILES}>,
+    indices : array<u32, ${MAX_CLUSTERED_LIGHTS}>,
   };
   @group(${group}) @binding(${binding}) var<storage, ${access}> clusterLights : ClusterLightGroup;
 `;

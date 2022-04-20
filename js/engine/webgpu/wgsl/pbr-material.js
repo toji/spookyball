@@ -7,11 +7,11 @@ import { ShadowFunctions } from './shadow.js';
 export const MATERIAL_BUFFER_SIZE = 11 * Float32Array.BYTES_PER_ELEMENT;
 export function MaterialStruct(group = 1) { return `
   struct Material {
-    baseColorFactor : vec4<f32>;
-    emissiveFactor : vec3<f32>;
-    occlusionStrength : f32;
-    metallicRoughnessFactor : vec2<f32>;
-    alphaCutoff : f32;
+    baseColorFactor : vec4<f32>,
+    emissiveFactor : vec3<f32>,
+    occlusionStrength : f32,
+    metallicRoughnessFactor : vec2<f32>,
+    alphaCutoff : f32,
   };
   @group(${group}) @binding(0) var<uniform> material : Material;
 
@@ -33,15 +33,15 @@ function PBRSurfaceInfo(layout) { return wgsl`
   ${MaterialStruct()}
 
   struct SurfaceInfo {
-    baseColor : vec4<f32>;
-    albedo : vec3<f32>;
-    metallic : f32;
-    roughness : f32;
-    normal : vec3<f32>;
-    f0 : vec3<f32>;
-    ao : f32;
-    emissive : vec3<f32>;
-    v : vec3<f32>;
+    baseColor : vec4<f32>,
+    albedo : vec3<f32>,
+    metallic : f32,
+    roughness : f32,
+    normal : vec3<f32>,
+    f0 : vec3<f32>,
+    ao : f32,
+    emissive : vec3<f32>,
+    v : vec3<f32>,
   };
 
   fn GetSurfaceInfo(input : VertexOutput) -> SurfaceInfo {
@@ -97,11 +97,11 @@ let LightType_Spot = 1u;
 let LightType_Directional = 2u;
 
 struct PuctualLight {
-  lightType : u32;
-  pointToLight : vec3<f32>;
-  range : f32;
-  color : vec3<f32>;
-  intensity : f32;
+  lightType : u32,
+  pointToLight : vec3<f32>,
+  range : f32,
+  color : vec3<f32>,
+  intensity : f32,
 };
 
 fn FresnelSchlick(cosTheta : f32, F0 : vec3<f32>) -> vec3<f32> {
@@ -194,9 +194,9 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
   ${PBRFunctions(fullyRough)}
 
   struct FragmentOutput {
-    @location(0) color : vec4<f32>;
+    @location(0) color : vec4<f32>,
 #if ${flags.bloomEnabled}
-    @location(1) emissive : vec4<f32>;
+    @location(1) emissive : vec4<f32>,
 #endif
   };
 
