@@ -4,14 +4,14 @@ import { AttributeLocation } from '../../core/mesh.js';
 export const CAMERA_BUFFER_SIZE = 56 * Float32Array.BYTES_PER_ELEMENT;
 export function CameraStruct(group = 0, binding = 0) { return `
   struct Camera {
-    projection : mat4x4<f32>;
-    inverseProjection : mat4x4<f32>;
-    view : mat4x4<f32>;
-    position : vec3<f32>;
-    time : f32;
-    outputSize : vec2<f32>;
-    zNear : f32;
-    zFar : f32;
+    projection : mat4x4<f32>,
+    inverseProjection : mat4x4<f32>,
+    view : mat4x4<f32>,
+    position : vec3<f32>,
+    time : f32,
+    outputSize : vec2<f32>,
+    zNear : f32,
+    zFar : f32,
   };
   @group(${group}) @binding(${binding}) var<uniform> camera : Camera;
 `;
@@ -20,19 +20,19 @@ export function CameraStruct(group = 0, binding = 0) { return `
 export const LIGHT_BUFFER_SIZE = 8 * Float32Array.BYTES_PER_ELEMENT;
 export function LightStruct(group = 0, binding = 1) { return `
   struct Light {
-    position : vec3<f32>;
-    range : f32;
-    color : vec3<f32>;
-    intensity : f32;
+    position : vec3<f32>,
+    range : f32,
+    color : vec3<f32>,
+    intensity : f32,
   };
 
   struct GlobalLights {
-    ambient : vec3<f32>;
-    dirColor : vec3<f32>;
-    dirIntensity : f32;
-    dirDirection : vec3<f32>;
-    lightCount : u32;
-    lights : array<Light>;
+    ambient : vec3<f32>,
+    dirColor : vec3<f32>,
+    dirIntensity : f32,
+    dirDirection : vec3<f32>,
+    lightCount : u32,
+    lights : array<Light>,
   };
   @group(${group}) @binding(${binding}) var<storage, read> globalLights : GlobalLights;
 `;
@@ -40,7 +40,7 @@ export function LightStruct(group = 0, binding = 1) { return `
 
 export function SkinStructs(group = 1) { return `
   struct Joints {
-    matrices : array<mat4x4<f32>>;
+    matrices : array<mat4x4<f32>>
   };
   @group(${group}) @binding(0) var<storage, read> joint : Joints;
   @group(${group}) @binding(1) var<storage, read> inverseBind : Joints;
@@ -67,22 +67,22 @@ export const INSTANCE_SIZE_BYTES = INSTANCE_SIZE_F32 * Float32Array.BYTES_PER_EL
 export function DefaultVertexInput(layout) {
   let inputs = layout.locationsUsed.map((location) => {
       switch(location) {
-      case AttributeLocation.position: return `@location(${AttributeLocation.position}) position : vec4<f32>;`;
-      case AttributeLocation.normal: return `@location(${AttributeLocation.normal}) normal : vec3<f32>;`;
-      case AttributeLocation.tangent: return `@location(${AttributeLocation.tangent}) tangent : vec4<f32>;`;
-      case AttributeLocation.texcoord: return `@location(${AttributeLocation.texcoord}) texcoord : vec2<f32>;`;
-      case AttributeLocation.texcoord2: return `@location(${AttributeLocation.texcoord2}) texcoord2 : vec2<f32>;`;
-      case AttributeLocation.color: return `@location(${AttributeLocation.color}) color : vec4<f32>;`;
-      case AttributeLocation.joints: return `@location(${AttributeLocation.joints}) joints : vec4<u32>;`;
-      case AttributeLocation.weights: return `@location(${AttributeLocation.weights}) weights : vec4<f32>;`;
+      case AttributeLocation.position: return `@location(${AttributeLocation.position}) position : vec4<f32>,`;
+      case AttributeLocation.normal: return `@location(${AttributeLocation.normal}) normal : vec3<f32>,`;
+      case AttributeLocation.tangent: return `@location(${AttributeLocation.tangent}) tangent : vec4<f32>,`;
+      case AttributeLocation.texcoord: return `@location(${AttributeLocation.texcoord}) texcoord : vec2<f32>,`;
+      case AttributeLocation.texcoord2: return `@location(${AttributeLocation.texcoord2}) texcoord2 : vec2<f32>,`;
+      case AttributeLocation.color: return `@location(${AttributeLocation.color}) color : vec4<f32>,`;
+      case AttributeLocation.joints: return `@location(${AttributeLocation.joints}) joints : vec4<u32>,`;
+      case AttributeLocation.weights: return `@location(${AttributeLocation.weights}) weights : vec4<f32>,`;
       }
   });
 
-  inputs.push(`@location(${AttributeLocation.maxAttributeLocation}) instance0 : vec4<f32>;`);
-  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+1}) instance1 : vec4<f32>;`);
-  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+2}) instance2 : vec4<f32>;`);
-  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+3}) instance3 : vec4<f32>;`);
-  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+4}) instanceColor : vec4<f32>;`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation}) instance0 : vec4<f32>,`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+1}) instance1 : vec4<f32>,`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+2}) instance2 : vec4<f32>,`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+3}) instance3 : vec4<f32>,`);
+  inputs.push(`@location(${AttributeLocation.maxAttributeLocation+4}) instanceColor : vec4<f32>,`);
 
   return `struct VertexInput {
     ${inputs.join('\n')}
@@ -91,18 +91,18 @@ export function DefaultVertexInput(layout) {
 
 export function DefaultVertexOutput(layout) { return wgsl`
   struct VertexOutput {
-    @builtin(position) position : vec4<f32>;
-    @location(0) worldPos : vec3<f32>;
-    @location(1) view : vec3<f32>; // Vector from vertex to camera.
-    @location(2) texcoord : vec2<f32>;
-    @location(3) texcoord2 : vec2<f32>;
-    @location(4) color : vec4<f32>;
-    @location(5) instanceColor : vec4<f32>;
-    @location(6) normal : vec3<f32>;
+    @builtin(position) position : vec4<f32>,
+    @location(0) worldPos : vec3<f32>,
+    @location(1) view : vec3<f32>, // Vector from vertex to camera.
+    @location(2) texcoord : vec2<f32>,
+    @location(3) texcoord2 : vec2<f32>,
+    @location(4) color : vec4<f32>,
+    @location(5) instanceColor : vec4<f32>,
+    @location(6) normal : vec3<f32>,
 
 #if ${layout.locationsUsed.includes(AttributeLocation.tangent)}
-    @location(7) tangent : vec3<f32>;
-    @location(8) bitangent : vec3<f32>;
+    @location(7) tangent : vec3<f32>,
+    @location(8) bitangent : vec3<f32>,
 #endif
   };
 `;
@@ -141,12 +141,12 @@ export const FullscreenTexturedQuadVertexSource = `
     vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 
   struct VertexInput {
-    @builtin(vertex_index) vertexIndex : u32;
+    @builtin(vertex_index) vertexIndex : u32
   };
 
   struct VertexOutput {
-    @builtin(position) position : vec4<f32>;
-    @location(0) texCoord : vec2<f32>;
+    @builtin(position) position : vec4<f32>,
+    @location(0) texCoord : vec2<f32>,
   };
 
   @stage(vertex)
@@ -163,7 +163,7 @@ export const FullscreenTexturedQuadVertexSource = `
 
 export const TextureDebugFragmentSource = `
 struct FragmentInput {
-  @location(0) texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>
 };
 
 @group(0) @binding(0) var debugTexture: texture_2d<f32>;
@@ -178,7 +178,7 @@ fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
 
 export const ShadowDebugFragmentSource = `
 struct FragmentInput {
-  @location(0) texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>
 };
 
 @group(0) @binding(0) var shadowTexture: texture_depth_2d;

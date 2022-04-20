@@ -6,15 +6,15 @@ var<private> weights : array<f32, 3> = array<f32, 3>(
   0.2270270270, 0.3162162162, 0.0702702703);
 
 struct BloomUniforms {
-  radius : f32;
-  dim : f32;
+  radius : f32,
+  dim : f32,
 };
 @group(0) @binding(0) var<uniform> bloom : BloomUniforms;
 @group(0) @binding(1) var bloomTexture : texture_2d<f32>;
 @group(0) @binding(2) var bloomSampler : sampler;
 
 struct FragmentInput {
-  @location(0) texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>
 };
 
 fn getGaussianBlur(texCoord : vec2<f32>) -> vec4<f32> {
@@ -72,7 +72,7 @@ export const BloomBlendFragmentSource = `
 @group(0) @binding(1) var bloomSampler : sampler;
 
 struct FragmentInput {
-  @location(0) texCoord : vec2<f32>;
+  @location(0) texCoord : vec2<f32>
 };
 
 @stage(fragment)

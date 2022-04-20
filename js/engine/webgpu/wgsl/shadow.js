@@ -7,7 +7,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
   @group(${group}) @binding(5) var shadowSampler : sampler_comparison;
 
   struct LightShadowTable {
-    light : array<i32>;
+    light : array<i32>
   };
   @group(${group}) @binding(6) var<storage, read> lightShadowTable : LightShadowTable;
 
@@ -37,11 +37,11 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
   let shadowSampleCount = ${flags.shadowSamples}u;
 
   struct ShadowProperties {
-    viewport: vec4<f32>;
-    viewProj: mat4x4<f32>;
+    viewport: vec4<f32>,
+    viewProj: mat4x4<f32>,
   };
   struct LightShadows {
-    properties : array<ShadowProperties>;
+    properties : array<ShadowProperties>
   };
   @group(${group}) @binding(7) var<storage, read> shadow : LightShadows;
 

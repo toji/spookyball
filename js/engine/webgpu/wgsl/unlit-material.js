@@ -3,8 +3,8 @@ import { ColorConversions, DefaultVertexOutput } from './common.js';
 export const MATERIAL_BUFFER_SIZE = 5 * Float32Array.BYTES_PER_ELEMENT;
 export function MaterialStruct(group = 1) { return `
   struct Material {
-    baseColorFactor : vec4<f32>;
-    alphaCutoff : f32;
+    baseColorFactor : vec4<f32>,
+    alphaCutoff : f32,
   };
   @group(${group}) @binding(0) var<uniform> material : Material;
 
