@@ -149,7 +149,7 @@ export const FullscreenTexturedQuadVertexSource = `
     @location(0) texCoord : vec2<f32>,
   };
 
-  @stage(vertex)
+  @vertex
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 
@@ -169,7 +169,7 @@ struct FragmentInput {
 @group(0) @binding(0) var debugTexture: texture_2d<f32>;
 @group(0) @binding(1) var debugSampler: sampler;
 
-@stage(fragment)
+@fragment
 fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let color = textureSample(debugTexture, debugSampler, input.texCoord);
   return color;
@@ -184,7 +184,7 @@ struct FragmentInput {
 @group(0) @binding(0) var shadowTexture: texture_depth_2d;
 @group(0) @binding(1) var shadowSampler: sampler;
 
-@stage(fragment)
+@fragment
 fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
   let shadowDepth = textureSample(shadowTexture, shadowSampler, input.texCoord);
   return vec4(shadowDepth, shadowDepth, shadowDepth, 1.0);

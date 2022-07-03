@@ -34,7 +34,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
   ERROR: Bad flag. shadowSampleCount must be 16, 4, 2, or 1
 #endif
 
-  let shadowSampleCount = ${flags.shadowSamples}u;
+  const shadowSampleCount = ${flags.shadowSamples}u;
 
   struct ShadowProperties {
     viewport: vec4<f32>,
@@ -138,7 +138,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
 export function ShadowFragmentSource(layout) { return `
   ${DefaultVertexOutput(layout)}
 
-  @stage(fragment)
+  @fragment
   fn fragmentMain(input : VertexOutput) {
   }
 `;

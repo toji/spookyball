@@ -56,32 +56,33 @@ function PBRSurfaceInfo(layout) { return wgsl`
     surface.normal = normalize(input.normal);
 #endif
 
+    // Need to do all the texture samples before any conditional discard statements.
     let baseColorMap = textureSample(baseColorTexture, baseColorSampler, input.texcoord);
+    let metallicRoughnessMap = textureSample(metallicRoughnessTexture, metallicRoughnessSampler, input.texcoord);
+    let occlusionMap = textureSample(occlusionTexture, occlusionSampler, input.texcoord);
+    let emissiveMap = textureSample(emissiveTexture, emissiveSampler, input.texcoord);
+
     surface.baseColor = input.color * material.baseColorFactor * baseColorMap;
+
     if (surface.baseColor.a < material.alphaCutoff) {
       discard;
     }
 
     surface.albedo = surface.baseColor.rgb;
+    if (input.instanceColor.a == 0.0) {
+      surface.albedo = surface.albedo + input.instanceColor.rgb;
+    } else {
+      surface.albedo = surface.albedo * input.instanceColor.rgb;
+    }
 
-    let metallicRoughnessMap = textureSample(metallicRoughnessTexture, metallicRoughnessSampler, input.texcoord);
     surface.metallic = material.metallicRoughnessFactor.x * metallicRoughnessMap.b;
     surface.roughness = material.metallicRoughnessFactor.y * metallicRoughnessMap.g;
 
     let dielectricSpec = vec3(0.04);
     surface.f0 = mix(dielectricSpec, surface.albedo, vec3(surface.metallic));
 
-    let occlusionMap = textureSample(occlusionTexture, occlusionSampler, input.texcoord);
     surface.ao = material.occlusionStrength * occlusionMap.r;
-
-    let emissiveMap = textureSample(emissiveTexture, emissiveSampler, input.texcoord);
     surface.emissive = material.emissiveFactor * emissiveMap.rgb;
-
-    if (input.instanceColor.a == 0.0) {
-      surface.albedo = surface.albedo + input.instanceColor.rgb;
-    } else {
-      surface.albedo = surface.albedo * input.instanceColor.rgb;
-    }
 
     return surface;
   }
@@ -90,11 +91,11 @@ function PBRSurfaceInfo(layout) { return wgsl`
 // Much of the shader used here was pulled from https://learnopengl.com/PBR/Lighting
 // Thanks!
 function PBRFunctions(fullyRough) { return wgsl`
-let PI = 3.14159265359;
+const PI = ${Math.PI};
 
-let LightType_Point = 0u;
-let LightType_Spot = 1u;
-let LightType_Directional = 2u;
+const LightType_Point = 0u;
+const LightType_Spot = 1u;
+const LightType_Directional = 2u;
 
 struct PuctualLight {
   lightType : u32,
@@ -200,7 +201,7 @@ export function PBRFragmentSource(layout, fullyRough, flags) { return wgsl`
 #endif
   };
 
-  @stage(fragment)
+  @fragment
   fn fragmentMain(input : VertexOutput) -> FragmentOutput {
     let surface = GetSurfaceInfo(input);
 

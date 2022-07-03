@@ -10,6 +10,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     // Setup a render pipeline for drawing debug views of textured quads
     this.blurHorizonalPipeline = gpu.device.createRenderPipeline({
       label: `Bloom Blur Horizontal Pipeline`,
+      layout: 'auto',
       vertex: {
         module: gpu.device.createShaderModule({
           code: FullscreenTexturedQuadVertexSource,
@@ -31,6 +32,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
 
     this.blurVerticalPipeline = gpu.device.createRenderPipeline({
       label: `Bloom Blur Vertical Pipeline`,
+      layout: 'auto',
       vertex: {
         module: gpu.device.createShaderModule({
           code: FullscreenTexturedQuadVertexSource,
@@ -44,7 +46,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
           label: 'Bloom Blur Vertical Fragment'
         }),
         entryPoint: 'fragmentMain',
-        targets: [{
+        targets: [ {
           format: gpu.renderTargets.format,
         }],
       }
@@ -52,6 +54,7 @@ export class WebGPUBloomSystem extends WebGPUSystem {
 
     this.blendPipeline = gpu.device.createRenderPipeline({
       label: `Bloom Blend Pipeline`,
+      layout: 'auto',
       vertex: {
         module: gpu.device.createShaderModule({
           code: FullscreenTexturedQuadVertexSource,

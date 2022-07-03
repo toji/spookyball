@@ -70,7 +70,7 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     passEncoder.setPipeline(this.boundsPipeline);
     passEncoder.setBindGroup(0, camera.bindGroup);
     passEncoder.setBindGroup(1, camera.clusterBoundsBindGroup);
-    passEncoder.dispatch(...DISPATCH_SIZE);
+    passEncoder.dispatchWorkgroups(...DISPATCH_SIZE);
     passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
@@ -89,7 +89,7 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     const passEncoder = commandEncoder.beginComputePass();
     passEncoder.setPipeline(this.lightsPipeline);
     passEncoder.setBindGroup(0, camera.clusterLightsBindGroup);
-    passEncoder.dispatch(...DISPATCH_SIZE);
+    passEncoder.dispatchWorkgroups(...DISPATCH_SIZE);
     passEncoder.end();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
