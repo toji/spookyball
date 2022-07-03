@@ -30,6 +30,12 @@ export class WebGPURenderer extends Renderer {
       powerPreference: flags.powerPreference,
     });
 
+    if ('requestAdapterInfo' in this.adapter) {
+      this.adapter.requestAdapterInfo().then((adapterInfo) => {
+        console.log('WebGPU Adapter Info:', adapterInfo);
+      });
+    }
+
     // Determine which of the desired features can be enabled for this device.
     const requiredFeatures = desiredFeatures.filter(feature => this.adapter.features.has(feature));
     this.device = await this.adapter.requestDevice({requiredFeatures});

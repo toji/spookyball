@@ -13,7 +13,7 @@ export const SkyboxVertexSource = `
     @location(0) texCoord : vec3<f32>,
   };
 
-  @stage(vertex)
+  @vertex
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
     output.texCoord = input.position.xyz;
@@ -39,7 +39,7 @@ export const SkyboxFragmentSource = `
   };
   @group(1) @binding(0) var skyboxTexture : texture_cube<f32>;
 
-  @stage(fragment)
+  @fragment
   fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
     let color = textureSample(skyboxTexture, defaultSampler, input.texCoord);
     return vec4(linearTosRGB(color.rgb), 1.0);

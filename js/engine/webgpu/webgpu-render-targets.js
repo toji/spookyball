@@ -25,13 +25,21 @@ export class WebGPURenderTargets extends EventTarget {
 
     // This function isn't available in Firefox, though it is in the spec.
     if (!this.format) {
-      if (this.context.getPreferredFormat) {
+      if (navigator.gpu.getPreferredCanvasFormat) {
+        this.format = navigator.gpu.getPreferredCanvasFormat();
+      } else if (this.context.getPreferredFormat) {
         this.format = this.context.getPreferredFormat(adapter);
       } else {
         this.format = 'bgra8unorm';
       }
       flags.colorFormat = this.format;
     }
+
+    this.context.configure({
+      device: device,
+      format: this.format,
+      alphaMode: 'opaque',
+    });
 
     this.resizeObserver = new ResizeObserver(entries => {
       for (let entry of entries) {
@@ -57,12 +65,8 @@ export class WebGPURenderTargets extends EventTarget {
   onCanvasResized(device, pixelWidth, pixelHeight) {
     this.size.width = pixelWidth * this.resolutionMultiplier;
     this.size.height = pixelHeight * this.resolutionMultiplier;
-    this.context.configure({
-      device: device,
-      size: this.size,
-      format: this.format,
-      compositingAlphaMode: 'opaque',
-    });
+    this.context.canvas.width = this.size.width;
+    this.context.canvas.height = this.size.height;
 
     if (this.sampleCount > 1) {
       this.msaaColorTexture = device.createTexture({

@@ -15,7 +15,7 @@ export function DefaultVertexSource(layout, skinned = false) { return wgsl`
   ${GetSkinMatrix}
 #endif
 
-  @stage(vertex)
+  @vertex
   fn vertexMain(input : VertexInput) -> VertexOutput {
     var output : VertexOutput;
 
