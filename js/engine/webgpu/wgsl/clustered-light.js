@@ -72,7 +72,7 @@ fn getClusterIndex(fragCoord : vec4<f32>) -> u32 {
 
 export const ClusterBoundsSource = `
   ${CameraStruct(0, 0)}
-  ${ClusterStruct(1, 0, 'write')}
+  ${ClusterStruct(1, 0, 'read_write')}
 
   fn lineIntersectionToZPlane(a : vec3<f32>, b : vec3<f32>, zDistance : f32) -> vec3<f32> {
     let normal = vec3(0.0, 0.0, 1.0);
