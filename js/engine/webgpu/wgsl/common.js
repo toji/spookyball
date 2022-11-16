@@ -2,7 +2,7 @@ import { wgsl } from 'wgsl-preprocessor';
 import { AttributeLocation } from '../../core/mesh.js';
 
 export const CAMERA_BUFFER_SIZE = 56 * Float32Array.BYTES_PER_ELEMENT;
-export function CameraStruct(group = 0, binding = 0) { return `
+export function CameraStruct(group = 0, binding = 0) { return /*wgsl*/`
   struct Camera {
     projection : mat4x4<f32>,
     inverseProjection : mat4x4<f32>,
@@ -18,7 +18,7 @@ export function CameraStruct(group = 0, binding = 0) { return `
 }
 
 export const LIGHT_BUFFER_SIZE = 8 * Float32Array.BYTES_PER_ELEMENT;
-export function LightStruct(group = 0, binding = 1) { return `
+export function LightStruct(group = 0, binding = 1) { return /*wgsl*/`
   struct Light {
     position : vec3<f32>,
     range : f32,
@@ -38,7 +38,7 @@ export function LightStruct(group = 0, binding = 1) { return `
 `;
 }
 
-export function SkinStructs(group = 1) { return `
+export function SkinStructs(group = 1) { return /*wgsl*/`
   struct Joints {
     matrices : array<mat4x4<f32>>
   };
@@ -108,7 +108,7 @@ export function DefaultVertexOutput(layout) { return wgsl`
 `;
 }
 
-export const GetInstanceMatrix = `
+export const GetInstanceMatrix = /*wgsl*/`
   fn getInstanceMatrix(input : VertexInput) -> mat4x4<f32> {
     return mat4x4(
       input.instance0,
@@ -136,7 +136,7 @@ export const ColorConversions = wgsl`
   }
 `;
 
-export const FullscreenTexturedQuadVertexSource = `
+export const FullscreenTexturedQuadVertexSource = /*wgsl*/`
   var<private> pos : array<vec2<f32>, 3> = array<vec2<f32>, 3>(
     vec2(-1.0, -1.0), vec2(-1.0, 3.0), vec2(3.0, -1.0));
 
@@ -161,7 +161,7 @@ export const FullscreenTexturedQuadVertexSource = `
   }
 `;
 
-export const TextureDebugFragmentSource = `
+export const TextureDebugFragmentSource = /*wgsl*/`
 struct FragmentInput {
   @location(0) texCoord : vec2<f32>
 };
@@ -176,7 +176,7 @@ fn fragmentMain(input : FragmentInput) -> @location(0) vec4<f32> {
 }
 `;
 
-export const ShadowDebugFragmentSource = `
+export const ShadowDebugFragmentSource = /*wgsl*/`
 struct FragmentInput {
   @location(0) texCoord : vec2<f32>
 };
