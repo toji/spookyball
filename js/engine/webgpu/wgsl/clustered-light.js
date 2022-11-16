@@ -18,7 +18,7 @@ export const MAX_LIGHTS_PER_CLUSTER = 256;
 export const MAX_CLUSTERED_LIGHTS = TOTAL_TILES * 64;
 export const CLUSTER_LIGHTS_SIZE = 4 + (8 * TOTAL_TILES) + (4 * MAX_CLUSTERED_LIGHTS);
 
-export function ClusterStruct(group, binding, access = 'read') { return `
+export function ClusterStruct(group, binding, access = 'read') { return /*wgsl*/`
   struct ClusterBounds {
     minAABB : vec3<f32>,
     maxAABB : vec3<f32>,
@@ -30,7 +30,7 @@ export function ClusterStruct(group, binding, access = 'read') { return `
 `;
 }
 
-export function ClusterLightsStruct(group=0, binding=2, access='read') { return `
+export function ClusterLightsStruct(group=0, binding=2, access='read') { return /*wgsl*/`
   struct ClusterLights {
     offset : u32,
     count : u32,
@@ -44,7 +44,7 @@ export function ClusterLightsStruct(group=0, binding=2, access='read') { return 
 `;
 }
 
-export const TileFunctions = `
+export const TileFunctions = /*wgsl*/`
 const tileCount = vec3(${TILE_COUNT[0]}u, ${TILE_COUNT[1]}u, ${TILE_COUNT[2]}u);
 
 fn linearDepth(depthSample : f32) -> f32 {
@@ -70,7 +70,7 @@ fn getClusterIndex(fragCoord : vec4<f32>) -> u32 {
 }
 `;
 
-export const ClusterBoundsSource = `
+export const ClusterBoundsSource = /*wgsl*/`
   ${CameraStruct(0, 0)}
   ${ClusterStruct(1, 0, 'read_write')}
 
@@ -123,7 +123,7 @@ export const ClusterBoundsSource = `
   }
 `;
 
-export const ClusterLightsSource = `
+export const ClusterLightsSource = /*wgsl*/`
   ${CameraStruct(0, 0)}
   ${ClusterStruct(0, 1, 'read')}
   ${ClusterLightsStruct(0, 2, 'read_write')}
@@ -131,14 +131,14 @@ export const ClusterLightsSource = `
 
   ${TileFunctions}
 
-  fn sqDistPointAABB(point : vec3<f32>, minAABB : vec3<f32>, maxAABB : vec3<f32>) -> f32 {
+  fn sqDistPointAABB(p : vec3<f32>, minAABB : vec3<f32>, maxAABB : vec3<f32>) -> f32 {
     var sqDist = 0.0;
     // const minAABB = clusters.bounds[tileIndex].minAABB;
     // const maxAABB = clusters.bounds[tileIndex].maxAABB;
 
     // Wait, does this actually work? Just porting code, but it seems suspect?
     for(var i : i32 = 0; i < 3; i = i + 1) {
-      let v = point[i];
+      let v = p[i];
       if(v < minAABB[i]){
         sqDist = sqDist + (minAABB[i] - v) * (minAABB[i] - v);
       }

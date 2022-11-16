@@ -1,6 +1,6 @@
 import { CameraStruct, ColorConversions } from './common.js';
 
-export const SkyboxVertexSource = `
+export const SkyboxVertexSource = /*wgsl*/`
   ${CameraStruct(0, 0)}
 
   struct VertexInput {
@@ -30,7 +30,7 @@ export const SkyboxVertexSource = `
   }
 `;
 
-export const SkyboxFragmentSource = `
+export const SkyboxFragmentSource = /*wgsl*/`
   ${ColorConversions}
   @group(0) @binding(3) var defaultSampler : sampler;
 

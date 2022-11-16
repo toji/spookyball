@@ -135,7 +135,7 @@ export function ShadowFunctions(group = 0, flags) { return wgsl`
 `;
 }
 
-export function ShadowFragmentSource(layout) { return `
+export function ShadowFragmentSource(layout) { return /*wgsl*/`
   ${DefaultVertexOutput(layout)}
 
   @fragment

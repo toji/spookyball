@@ -1,7 +1,7 @@
 import { ColorConversions, DefaultVertexOutput } from './common.js';
 
 export const MATERIAL_BUFFER_SIZE = 5 * Float32Array.BYTES_PER_ELEMENT;
-export function MaterialStruct(group = 1) { return `
+export function MaterialStruct(group = 1) { return /*wgsl*/`
   struct Material {
     baseColorFactor : vec4<f32>,
     alphaCutoff : f32,
@@ -13,7 +13,7 @@ export function MaterialStruct(group = 1) { return `
 `;
 }
 
-export function UnlitFragmentSource(layout) { return `
+export function UnlitFragmentSource(layout) { return /*wgsl*/`
   ${ColorConversions}
   ${DefaultVertexOutput(layout)}
   ${MaterialStruct()}
