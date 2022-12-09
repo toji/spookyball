@@ -4,7 +4,7 @@ import { CameraStruct, LightStruct, ColorConversions, DefaultVertexOutput } from
 import { ClusterLightsStruct, TileFunctions } from './clustered-light.js';
 import { ShadowFunctions } from './shadow.js';
 
-export const MATERIAL_BUFFER_SIZE = 11 * Float32Array.BYTES_PER_ELEMENT;
+export const MATERIAL_BUFFER_SIZE = 12 * Float32Array.BYTES_PER_ELEMENT; // Must be a multiple of 16 bytes
 export function MaterialStruct(group = 1) { return /*wgsl*/`
   struct Material {
     baseColorFactor : vec4<f32>,
