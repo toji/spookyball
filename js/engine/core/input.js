@@ -11,10 +11,12 @@ export class KeyboardState {
 }
 
 export class MouseState {
+  element = window;
   buttons = [];
   position = vec2.create();
   delta = vec2.create();
   wheelDelta = vec2.create();
+  click = false;
 }
 
 export class GamepadState {
@@ -23,13 +25,14 @@ export class GamepadState {
 
 export class InputSystem extends System {
   stage = Stage.First;
-  eventCanvas = null;
+  mouseEventElement = null;
   lastMouseX = 0;
   lastMouseY = 0;
   mouseDeltaX = 0;
   mouseDeltaY = 0;
   mouseWheelDeltaX = 0;
   mouseWheelDeltaY = 0;
+  mouseClick = false;
 
   init() {
     const keyboard = new KeyboardState();
@@ -65,14 +68,31 @@ export class InputSystem extends System {
       this.mouseDeltaY += event.clientY - this.lastMouseY;
       this.lastMouseX = mouse.position[0] = event.clientX;
       this.lastMouseY = mouse.position[1] = event.clientY;
+
+      // Make the mouse position relative to the target element.
+      const rect = event.target.getBoundingClientRect();
+      mouse.position[0] -= rect.left;
+      mouse.position[1] -= rect.top;
+      console.log(`Move to (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.pointerDownCallback = (event) => {
       mouse.buttons[event.button] = true;
+
+      this.lastMouseX = mouse.position[0] = event.clientX;
+      this.lastMouseY = mouse.position[1] = event.clientY;
+      // Make the mouse position relative to the target element.
+      const rect = event.target.getBoundingClientRect();
+      mouse.position[0] -= rect.left;
+      mouse.position[1] -= rect.top;
+
+      console.log(`Pointer down (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.pointerUpCallback = (event) => {
       mouse.buttons[event.button] = false;
+
+      console.log(`Pointer up (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.mousewheelCallback = (event) => {
@@ -80,25 +100,52 @@ export class InputSystem extends System {
       this.mouseWheelDeltaY += event.wheelDeltaY;
     };
 
-    // TODO: These listeners should be attached to the canvases in question
-    window.addEventListener('pointerenter', this.pointerEnterCallback);
-    window.addEventListener('pointerdown', this.pointerDownCallback);
-    window.addEventListener('pointermove', this.pointerMoveCallback);
-    window.addEventListener('pointerup', this.pointerUpCallback);
-    window.addEventListener('mousewheel', this.mousewheelCallback);
+    this.mouseClickCallback = (event) => {
+      this.mouseClick = true;
+    };
+
+    this.updateMouseEventElement(mouse.element);
+  }
+
+  updateMouseEventElement(element) {
+    if (this.mouseEventElement === element) { return; }
+
+    if (this.mouseEventElement) {
+      this.mouseEventElement.removeEventListener('pointerenter', this.pointerEnterCallback);
+      this.mouseEventElement.removeEventListener('pointerdown', this.pointerDownCallback);
+      this.mouseEventElement.removeEventListener('pointermove', this.pointerMoveCallback);
+      this.mouseEventElement.removeEventListener('pointerup', this.pointerUpCallback);
+      this.mouseEventElement.removeEventListener('mousewheel', this.mousewheelCallback);
+      this.mouseEventElement.removeEventListener('click', this.mouseClickCallback);
+    }
+
+    if (element) {
+      element.addEventListener('pointerenter', this.pointerEnterCallback);
+      element.addEventListener('pointerdown', this.pointerDownCallback);
+      element.addEventListener('pointermove', this.pointerMoveCallback);
+      element.addEventListener('pointerup', this.pointerUpCallback);
+      element.addEventListener('mousewheel', this.mousewheelCallback);
+      element.addEventListener('click', this.mouseClickCallback);
+    }
+
+    this.mouseEventElement = element;
   }
 
   execute() {
     // Update the mouse singleton with the latest movement deltas since the last frame.
     const mouse = this.singleton.get(MouseState);
+    this.updateMouseEventElement(mouse.element);
+
     mouse.delta[0] = this.mouseDeltaX;
     mouse.delta[1] = this.mouseDeltaY;
     mouse.wheelDelta[0] = this.mouseWheelDeltaX;
     mouse.wheelDelta[1] = this.mouseWheelDeltaY;
+    mouse.click = this.mouseClick;
     this.mouseDeltaX = 0;
     this.mouseDeltaY = 0;
     this.mouseWheelDeltaX = 0;
     this.mouseWheelDeltaY = 0;
+    this.mouseClick = false;
 
     const gamepad = this.singleton.get(GamepadState);
     gamepad.gamepads = [];

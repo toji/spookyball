@@ -1,9 +1,10 @@
 import { System, Tag } from './engine/core/ecs.js';
-import { KeyboardState, GamepadState } from './engine/core/input.js';
+import { KeyboardState, GamepadState, MouseState } from './engine/core/input.js';
 import { Physics2DBody } from './physics-2d.js';
 import { FlyingControls } from './engine/controls/flying-controls.js';
 
 const PADDLE_SPEED = 62;
+const BOARD_HALF_WIDTH = 17;
 
 export class GameState {
   level = 0;
@@ -21,6 +22,7 @@ export class Paddle {
 
 export class PlayerSystem extends System {
   executesWhenPaused = false;
+  useMouse = false;
 
   init(gpu, gltfLoader) {
     this.paddleQuery = this.query(Paddle, Physics2DBody);
@@ -52,31 +54,37 @@ export class PlayerSystem extends System {
 
     const gamepad = this.singleton.get(GamepadState);
     const keyboard = this.singleton.get(KeyboardState);
-    //const mouse = this.singleton.get(MouseState);
+    const mouse = this.singleton.get(MouseState);
 
     let movement = 0;
     let launch = false;
 
     // Keyboard input
     if (keyboard.keyPressed('ArrowRight')) {
+      this.useMouse = false;
       movement += 1.0;
     }
     if (keyboard.keyPressed('ArrowLeft')) {
+      this.useMouse = false;
       movement -= 1.0;
     }
     if (keyboard.keyPressed('ArrowUp')) {
+      this.useMouse = false;
       launch = true;
     }
 
     // An alternate set of keybindings to use, but only if flying controls aren't enabled.
     if (useWASD) {
       if (keyboard.keyPressed('KeyD')) {
+        this.useMouse = false;
         movement += 1.0;
       }
       if (keyboard.keyPressed('KeyA')) {
+        this.useMouse = false;
         movement -= 1.0;
       }
       if (keyboard.keyPressed('KeyW') || keyboard.keyPressed('Space')) {
+        this.useMouse = false;
         launch = true;
       }
     }
@@ -90,28 +98,41 @@ export class PlayerSystem extends System {
       }
 
       if (pad.buttons.length && pad.buttons[0].pressed) {
+        this.useMouse = false;
         launch = true;
       }
 
       // Dpad
       if (pad.buttons.length > 15) {
         if (pad.buttons[14].pressed) {
+          this.useMouse = false;
           movement -= 1.0;
         }
         if (pad.buttons[15].pressed) {
+          this.useMouse = false;
           movement += 1.0;
         }
       }
+    }
+
+    // Pointer input
+    if (mouse.click) {
+      this.useMouse = true;
+      launch = true;
     }
 
     // Ensure we can never move too fast.
     movement = Math.min(1, Math.max(-1, movement)) * delta * PADDLE_SPEED;
 
     this.paddleQuery.forEach((entity, paddle, body) => {
+      if (this.useMouse) {
+        const worldMouseX = ((mouse.position[0] / mouse.element.offsetWidth) - 0.5) * (BOARD_HALF_WIDTH * 3.5);
+        movement = Math.min(1, Math.max(-1, worldMouseX - paddle.x)) * delta * PADDLE_SPEED;
+      }
       paddle.x += movement;
 
       // Constrain movement to the board
-      paddle.x = Math.min(17, Math.max(-17, paddle.x));
+      paddle.x = Math.min(BOARD_HALF_WIDTH, Math.max(-BOARD_HALF_WIDTH, paddle.x));
 
       paddle.launch = launch;
 

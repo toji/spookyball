@@ -5,6 +5,7 @@ import { AmbientLight, DirectionalLight, ShadowCastingLight } from './engine/cor
 import { GltfLoader } from './engine/loaders/gltf.js';
 import { WebGPUWorld } from './engine/webgpu/webgpu-world.js';
 import { BoneVisualizerSystem } from './engine/debug/bone-visualizer.js';
+import { MouseState } from './engine/core/input.js';
 
 import { BallSystem } from './ball.js';
 import { PlayerSystem, GameState } from './player.js';
@@ -106,6 +107,8 @@ const world = new WebGPUWorld(canvas, rendererFlags)
 
 world.singleton.add(new GameState());
 
+let mouse = world.singleton.get(MouseState);
+mouse.element = canvas;
 
 let renderer;
 try {
