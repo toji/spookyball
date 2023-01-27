@@ -73,7 +73,6 @@ export class InputSystem extends System {
       const rect = event.target.getBoundingClientRect();
       mouse.position[0] -= rect.left;
       mouse.position[1] -= rect.top;
-      console.log(`Move to (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.pointerDownCallback = (event) => {
@@ -85,14 +84,10 @@ export class InputSystem extends System {
       const rect = event.target.getBoundingClientRect();
       mouse.position[0] -= rect.left;
       mouse.position[1] -= rect.top;
-
-      console.log(`Pointer down (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.pointerUpCallback = (event) => {
       mouse.buttons[event.button] = false;
-
-      console.log(`Pointer up (${mouse.position[0]}, ${mouse.position[1]})`);
     };
 
     this.mousewheelCallback = (event) => {
