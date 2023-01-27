@@ -65,17 +65,8 @@ export class WebGPURenderTargets extends EventTarget {
   onCanvasResized(device, pixelWidth, pixelHeight) {
     this.size.width = pixelWidth * this.resolutionMultiplier;
     this.size.height = pixelHeight * this.resolutionMultiplier;
-<<<<<<< Updated upstream
     this.context.canvas.width = this.size.width;
     this.context.canvas.height = this.size.height;
-=======
-    this.context.configure({
-      device: device,
-      size: this.size,
-      format: this.format,
-      alphaMode: 'opaque',
-    });
->>>>>>> Stashed changes
 
     if (this.sampleCount > 1) {
       this.msaaColorTexture = device.createTexture({
