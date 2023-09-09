@@ -49,7 +49,7 @@ function resolveFormat(format) {
 
 /**
  * Gets the WebGL texture target required for a given texture type.
- * 
+ *
  * @param {GPUTextureViewDimension} type - Texture type.
  * @returns {GLenum} - WebGL texture target.
  */
@@ -113,8 +113,8 @@ class WebGLTextureClient {
     ];
 
     if (this.isWebGL2) {
-      this.uncompressedFormatList.push('rgb8unorm-srgb', 'rgba8unorm-srgb');
-      this.supportedFormatList.push('rgb8unorm-srgb', 'rgba8unorm-srgb');
+      this.uncompressedFormatList.push('rgb8unorm-srgb', 'rgba8unorm-srgb', 'rg11b10ufloat');
+      this.supportedFormatList.push('rgb8unorm-srgb', 'rgba8unorm-srgb', 'rg11b10ufloat');
     } else {
       this.extensions.srgb = gl.getExtension('EXT_sRGB');
       if (this.extensions.srgb) {
@@ -265,6 +265,9 @@ class WebGLTextureClient {
           case 'rgba4unorm':
           case 'rgba5551unorm':
             sliceData = new Uint16Array(slice.buffer, slice.byteOffset, slice.byteLength / 2);
+            break;
+          case 'rg11b10ufloat':
+            sliceData = new Uint32Array(slice.buffer, slice.byteOffset, slice.byteLength / 4);
             break;
           default:
             sliceData = new Uint8Array(slice.buffer, slice.byteOffset, slice.byteLength);

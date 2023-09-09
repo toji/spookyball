@@ -23,6 +23,18 @@ const EXTENSION_FORMATS = {
     'bc7-rgba-unorm',
     'bc7-rgba-unorm-srgb',
   ],
+  'texture-compression-etc2': [
+    "etc2-rgb8unorm",
+    "etc2-rgb8unorm-srgb",
+    "etc2-rgb8a1unorm",
+    "etc2-rgb8a1unorm-srgb",
+    "etc2-rgba8unorm",
+    "etc2-rgba8unorm-srgb",
+    "eac-r11unorm",
+    "eac-r11snorm",
+    "eac-rg11unorm",
+    "eac-rg11snorm",
+  ],
 };
 
 const LINEAR_TO_SRGB_FORMATS = {
@@ -33,6 +45,9 @@ const LINEAR_TO_SRGB_FORMATS = {
   'bc2-rgba-unorm': 'bc2-rgba-unorm-srgb',
   'bc3-rgba-unorm': 'bc3-rgba-unorm-srgb',
   'bc7-rgba-unorm': 'bc7-rgba-unorm-srgb',
+  'etc2-rgb8unorm': 'etc2-rgb8unorm-srgb',
+  'etc2-rgb8a1unorm': 'etc2-rgb8a1unorm-srgb',
+  'etc2-rgba8unorm': 'etc2-rgba8unorm-srgb',
 };
 
 const SRGB_TO_LINEAR_FORMATS = {
@@ -43,6 +58,9 @@ const SRGB_TO_LINEAR_FORMATS = {
   'bc2-rgba-unorm-srgb': 'bc2-rgba-unorm',
   'bc3-rgba-unorm-srgb': 'bc3-rgba-unorm',
   'bc7-rgba-unorm-srgb': 'bc7-rgba-unorm',
+  'etc2-rgb8unorm-srgb': 'etc2-rgb8unorm',
+  'etc2-rgb8a1unorm-srgb': 'etc2-rgb8a1unorm',
+  'etc2-rgba8unorm-srgb': 'etc2-rgba8unorm',
 };
 
 function formatForColorSpace(format, colorSpace) {
@@ -101,6 +119,7 @@ class WebGPUTextureClient {
       'rgba8unorm-srgb',
       'bgra8unorm',
       'bgra8unorm-srgb',
+      'rg11b10ufloat',
     ];
 
     this.supportedFormatList = [
@@ -108,6 +127,7 @@ class WebGPUTextureClient {
       'rgba8unorm-srgb',
       'bgra8unorm',
       'bgra8unorm-srgb',
+      'rg11b10ufloat',
     ];
 
     // Add any other formats that are exposed by WebGPU features.

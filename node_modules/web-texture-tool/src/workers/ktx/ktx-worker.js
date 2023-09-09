@@ -32,6 +32,7 @@ const WTT_FORMAT_MAP = {
   RGBA32: {format: 'rgba8unorm', uncompressed: true},
   RGB565: {format: 'rgb565unorm', uncompressed: true},
   RGBA4444: {format: 'rgba4unorm', uncompressed: true},
+  R11F_G11F_B10F: {format: 'rg11b10ufloat', uncompressed: true},
 };
 
 // See http://richg42.blogspot.com/2018/05/basis-universal-gpu-texture-format.html for details.
@@ -75,6 +76,8 @@ function glFormatToGPUFormat(glInternalFormat) {
       return 'rgb8unorm-srgb';
     case 0x8C43: // SRGB8_ALPHA8
       return 'rgba8unorm-srgb';
+    case 0x8C3A: // R11F_G11F_B10F
+      return 'rg11b10ufloat';
     default:
       throw new Error(`Unsupported glInternalFormat: ${glInternalFormat}`);
   }

@@ -43,6 +43,12 @@ export const WebTextureFormat = {
   'bgra8unorm': {canGenerateMipmaps: true}, // No WebGL equivalent
   'bgra8unorm-srgb': {canGenerateMipmaps: true}, // No WebGL equivalent
 
+  // Floating point textures
+  'rg11b10ufloat': {
+    canGenerateMipmaps: false,
+    gl: {format: GL.RGB, type: 0x8C3B /*UNSIGNED_INT_10F_11F_11F_REV*/, sizedFormat: 0x8C3A}, // R11F_G11F_B10F
+  },
+
   // Compressed formats
   // WebGL enums from http://www.khronos.org/registry/webgl/extensions/
   'bc1-rgb-unorm': {

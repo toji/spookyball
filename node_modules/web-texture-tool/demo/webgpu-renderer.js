@@ -19,11 +19,11 @@ const wgslSrc = {
     );
 
     struct VertexOut {
-      @builtin(position) Position : vec4<f32>;
-      @location(0) vTex : vec2<f32>;
+      @builtin(position) Position : vec4<f32>,
+      @location(0) vTex : vec2<f32>,
     };
 
-    @stage(vertex)
+    @vertex
     fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOut {
       var output : VertexOut;
       output.vTex = tex[VertexIndex];
@@ -35,7 +35,7 @@ const wgslSrc = {
     @group(0) @binding(1) var imgSampler : sampler;
     @group(0) @binding(2) var img : texture_2d<f32>;
 
-    @stage(fragment)
+    @fragment
     fn main(@location(0) vTex : vec2<f32>) -> @location(0) vec4<f32> {
       return textureSample(img, imgSampler, vTex);
     }
@@ -55,21 +55,21 @@ class Tile2DRenderer {
       );
 
       struct VertexOut {
-        @builtin(position) Position : vec4<f32>;
-        @location(0) vTex : vec2<f32>;
+        @builtin(position) Position : vec4<f32>,
+        @location(0) vTex : vec2<f32>,
       };
 
       struct TileUniforms {
-        modelViewMatrix : mat4x4<f32>;
+        modelViewMatrix : mat4x4<f32>
       };
       @group(0) @binding(0) var<uniform> tileUniforms : TileUniforms;
 
       struct FrameUniforms {
-        projectionMatrix : mat4x4<f32>;
+        projectionMatrix : mat4x4<f32>
       };
       @group(1) @binding(0) var<uniform> frameUniforms : FrameUniforms;
 
-      @stage(vertex)
+      @vertex
       fn main(@builtin(vertex_index) VertexIndex : u32) -> VertexOut {
         var output : VertexOut;
         output.vTex = tex[VertexIndex];
@@ -82,7 +82,7 @@ class Tile2DRenderer {
       @group(0) @binding(1) var imgSampler : sampler;
       @group(0) @binding(2) var img : texture_2d<f32>;
 
-      @stage(fragment)
+      @fragment
       fn main(@location(0) vTex : vec2<f32>) -> @location(0) vec4<f32> {
         return textureSample(img, imgSampler, vTex);
       }
@@ -151,22 +151,22 @@ class TileCubeRenderer {
 
     const vertexSrc = `
       struct VertexOut {
-        @builtin(position) Position : vec4<f32>;
-        @location(0) vTex : vec3<f32>;
+        @builtin(position) Position : vec4<f32>,
+        @location(0) vTex : vec3<f32>,
       };
 
       struct TileUniforms {
-        modelViewMatrix : mat4x4<f32>;
+        modelViewMatrix : mat4x4<f32>
       };
       @group(0) @binding(0) var<uniform> tileUniforms : TileUniforms;
 
       struct FrameUniforms {
-        projectionMatrix : mat4x4<f32>;
-        cubeSpin : mat4x4<f32>;
+        projectionMatrix : mat4x4<f32>,
+        cubeSpin : mat4x4<f32>,
       };
       @group(1) @binding(0) var<uniform> frameUniforms : FrameUniforms;
 
-      @stage(vertex)
+      @vertex
       fn main(@location(0) position : vec3<f32>) -> VertexOut {
         var output : VertexOut;
         output.vTex = normalize(position);
@@ -179,7 +179,7 @@ class TileCubeRenderer {
       @group(0) @binding(1) var imgSampler : sampler;
       @group(0) @binding(2) var img : texture_cube<f32>;
 
-      @stage(fragment)
+      @fragment
       fn main(@location(0) vTex : vec3<f32>) -> @location(0) vec4<f32> {
         return textureSample(img, imgSampler, vTex);
       }
@@ -304,6 +304,7 @@ export class WebGPURenderer {
   constructor() {
     this.canvas = document.createElement('canvas');
     this.context = this.canvas.getContext('webgpu');
+    this.swapChainFormat = navigator.gpu.getPreferredCanvasFormat();
     this.mipmaps = true;
   }
 
@@ -324,8 +325,6 @@ export class WebGPURenderer {
     this.loader = new WebGPUTextureLoader(this.device);
 
     // Swap chain setup
-    this.swapChainFormat = this.context.getPreferredFormat(this.adapter);
-
     this.colorAttachment = {
       // view is acquired and set in onCanvasResize.
       view: undefined,
@@ -399,6 +398,7 @@ export class WebGPURenderer {
 
     // Background rendering setup
     this.backgroundPipeline = this.device.createRenderPipeline({
+      layout: 'auto',
       vertex: {
         module: this.device.createShaderModule({
           code: wgslSrc.backgroundVertex
@@ -449,8 +449,7 @@ export class WebGPURenderer {
     this.context.configure({
       device: this.device,
       format: this.swapChainFormat,
-      size: { width, height },
-      compositingAlphaMode: 'opaque'
+      alphaMode: 'opaque'
     });
 
     const msaaColorTexture = this.device.createTexture({
