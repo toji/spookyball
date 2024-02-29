@@ -180,6 +180,8 @@ export class WebGPURenderer extends Renderer {
       this.colorAttachment.view = outputTexture.createView();
     }
 
+    commandEncoder.pushDebugGroup('Forward render pass');
+
     const passEncoder = commandEncoder.beginRenderPass(this.renderPassDescriptor);
 
     passEncoder.setBindGroup(0, camera.bindGroup);
@@ -226,6 +228,8 @@ export class WebGPURenderer extends Renderer {
     }
 
     passEncoder.end();
+
+    commandEncoder.popDebugGroup();
 
     this.device.queue.submit([commandEncoder.finish()]);
 

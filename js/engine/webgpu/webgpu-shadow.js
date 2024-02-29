@@ -272,6 +272,8 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     // TODO: Should be able to have a single command encoder for all render passes
     const commandEncoder = gpu.device.createCommandEncoder({});
 
+    commandEncoder.pushDebugGroup('Render Shadows');
+
     const passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [],
       depthStencilAttachment: {
@@ -342,6 +344,8 @@ export class WebGPUShadowSystem extends WebGPUSystem {
     }
 
     passEncoder.end();
+
+    commandEncoder.popDebugGroup();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }
