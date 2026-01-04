@@ -84,6 +84,8 @@ export class WebGPUClusteredLights extends WebGPUSystem {
 
     const commandEncoder = gpu.device.createCommandEncoder();
 
+    commandEncoder.pushDebugGroup('Update Cluster Lights');
+
     // Update the FrameUniforms buffer with the values that are used by every
     // program and don't change for the duration of the frame.
     const passEncoder = commandEncoder.beginComputePass();
@@ -91,6 +93,8 @@ export class WebGPUClusteredLights extends WebGPUSystem {
     passEncoder.setBindGroup(0, camera.clusterLightsBindGroup);
     passEncoder.dispatchWorkgroups(...DISPATCH_SIZE);
     passEncoder.end();
+
+    commandEncoder.popDebugGroup();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
   }

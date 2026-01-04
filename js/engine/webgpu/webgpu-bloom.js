@@ -185,9 +185,12 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     const bloomTextures = gpu.renderTargets.bloomTextures;
     const commandEncoder = gpu.device.createCommandEncoder({});
 
+    commandEncoder.pushDebugGroup('Render Bloom');
+
     const pingPongIndex = this.frameIndex % 2;
 
     // 1st pass (Horizontal blur)
+    commandEncoder.pushDebugGroup('1st Pass (Horizontal Blur)');
     let passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: bloomTextures[0].createView(),
@@ -201,8 +204,10 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setBindGroup(0, this.pass0BindGroup);
     passEncoder.draw(3);
     passEncoder.end();
+    commandEncoder.popDebugGroup();
 
     // 2nd pass (Vertical blur)
+    commandEncoder.pushDebugGroup('2nd Pass (Vertical Blur)');
     passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: bloomTextures[1 + pingPongIndex].createView(),
@@ -216,8 +221,10 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setBindGroup(0, this.pass1BindGroups[pingPongIndex]);
     passEncoder.draw(3);
     passEncoder.end();
+    commandEncoder.popDebugGroup();
 
     // Blend pass
+    commandEncoder.pushDebugGroup('Blend Pass');
     passEncoder = commandEncoder.beginRenderPass({
       colorAttachments: [{
         view: gpu.renderTargets.context.getCurrentTexture().createView(),
@@ -230,6 +237,9 @@ export class WebGPUBloomSystem extends WebGPUSystem {
     passEncoder.setBindGroup(0, this.blendPassBindGroups[pingPongIndex]);
     passEncoder.draw(3);
     passEncoder.end();
+    commandEncoder.popDebugGroup();
+
+    commandEncoder.popDebugGroup();
 
     gpu.device.queue.submit([commandEncoder.finish()]);
 
