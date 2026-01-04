@@ -32,6 +32,7 @@ const debugMode = QueryArgs.getBool('debug', false);
 
 function getQuality() {
   const ULTRA_QUALITY = {
+    shadowSamples: 16,
     ballShadows: true,
     maxBallShadows: 2,
   };
@@ -40,7 +41,7 @@ function getQuality() {
   }; // Defaults
 
   const MEDIUM_QUALITY = {
-    shadowSamples: 4,
+    shadowSamples: 2,
     resolutionMultiplier: 0.75,
   };
 
@@ -77,6 +78,9 @@ function getQuality() {
   }
 
   // TODO: Try to auto-detect a rough feature level
+  if (navigator.userAgentData?.mobile === true) {
+    return MEDIUM_QUALITY;
+  }
   return HIGH_QUALITY;
 }
 

@@ -57,6 +57,7 @@ export class InputSystem extends System {
     });
 
     this.pointerEnterCallback = (event) => {
+      if (!event.isPrimary) { return; }
       this.lastMouseX = event.clientX;
       this.lastMouseY = event.clientY;
       this.mouseDeltaX = 0;
@@ -64,6 +65,7 @@ export class InputSystem extends System {
     };
 
     this.pointerMoveCallback = (event) => {
+      if (!event.isPrimary) { return; }
       this.mouseDeltaX += event.clientX - this.lastMouseX;
       this.mouseDeltaY += event.clientY - this.lastMouseY;
       this.lastMouseX = mouse.position[0] = event.clientX;
@@ -76,6 +78,7 @@ export class InputSystem extends System {
     };
 
     this.pointerDownCallback = (event) => {
+      if (!event.isPrimary) { return; }
       mouse.buttons[event.button] = true;
 
       this.lastMouseX = mouse.position[0] = event.clientX;
@@ -87,6 +90,7 @@ export class InputSystem extends System {
     };
 
     this.pointerUpCallback = (event) => {
+      if (!event.isPrimary) { return; }
       mouse.buttons[event.button] = false;
     };
 

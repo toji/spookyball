@@ -12,7 +12,7 @@ export const WEBGPU_DEFAULT_FLAGS = {
   shadowsEnabled: true,
   shadowResolutionMultiplier: 1,
   shadowUpdateFrequency: 1, // A setting of 2 will only update the shadow map every other frame
-  shadowSamples: 16, // May be 16, 4, or 1
+  shadowSamples: 4, // May be 16, 4, 2, or 1
 
   // Bloom
   bloomEnabled: true,

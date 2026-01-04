@@ -30,7 +30,9 @@ export class WebGPURenderer extends Renderer {
       powerPreference: flags.powerPreference,
     });
 
-    if ('requestAdapterInfo' in this.adapter) {
+    if ('info' in this.adapter) {
+      console.log('WebGPU Adapter Info:', this.adapter.info);
+    } else if ('requestAdapterInfo' in this.adapter) {
       this.adapter.requestAdapterInfo().then((adapterInfo) => {
         console.log('WebGPU Adapter Info:', adapterInfo);
       });
@@ -79,7 +81,7 @@ export class WebGPURenderer extends Renderer {
 
     this.shadowDepthSampler = this.device.createSampler({
       minFilter: 'linear',
-      maxFilter: 'linear',
+      magFilter: 'linear',
       mipmapFilter: 'linear',
       compare: 'less',
     });
