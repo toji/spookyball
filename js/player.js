@@ -127,7 +127,10 @@ export class PlayerSystem extends System {
     this.paddleQuery.forEach((entity, paddle, body) => {
       if (this.useMouse) {
         const worldMouseX = ((mouse.position[0] / mouse.element.offsetWidth) - 0.5) * (BOARD_HALF_WIDTH * 3.5);
-        movement = Math.min(1, Math.max(-1, worldMouseX - paddle.x)) * delta * PADDLE_SPEED;
+        // Move toward the pointer by at most PADDLE_SPEED units/second, but clamped to the
+        // remaining distance so the paddle can't overshoot the target.
+        const maxStep = delta * PADDLE_SPEED;
+        movement = Math.max(-maxStep, Math.min(maxStep, worldMouseX - paddle.x));
       }
       paddle.x += movement;
 
